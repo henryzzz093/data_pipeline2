@@ -1,0 +1,160 @@
+import logging
+from abc import ABC, abstractmethod
+from os.path import isfile
+
+# from airflow.exceptions import AirflowSkipException
+from jinja2 import Environment, PackageLoader
+
+from data_pipelines.connections.core import CSVConn, TextConn
+
+DEFAULT_LOGGER = logging.getLogger(__name__)
+
+
+class BaseAction(ABC):
+    """
+    Base action calss that should be inherited from
+    """
+
+    def __init__(self, **kwargs):
+        self.log = DEFAULT_LOGGER
+        self.jinja_env = Environment(
+            loader=PackageLoader("data_pipelines", "templates")
+        )
+
+    @abstractmethod
+    def run(self):
+        """
+        Abstract method that must be overwritten dy child class
+        """
+        pass
+
+
+class SourceToSink(BaseAction):
+    """
+    This class contains the core logic to transport data
+    from a source class to a sink class performing all
+    applied transformation logic in the process
+    """
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        source_kwargs = kwargs.get(
+            "source_kwargs", {}
+        )  # if the key not exist, return the defalt values (emply dict)
+        sink_kwargs = kwargs.get("sink_kwargs", {})
+
+        self.source = self.source_class(**source_kwargs)
+        self.sink = self.sink_class(**sink_kwargs)
+
+    def get_data(self):
+        """
+        Pulls data from source class.
+        """
+        return self.source.get_data()
+
+    def transform_data(self, data):
+        """
+        Overriden to provide transformation logic
+        """
+        return data
+
+    def load_data(self, data, *args, **kwargs):
+        """
+        Loads data with the sink class
+        """
+        self.sink.load_data(data, *args, **kwargs)
+
+    def run(self):
+        """
+        The core function that is executed by the airflow operator class
+        """
+        with self.source, self.sink:
+            for data in self.source.get_data():
+                data = self.transform_data(data)
+                self.load_data(data)
+            self.log.info("Data Load Success!")
+
+
+class CSVToCSV(SourceToSink):
+    source_class = CSVConn
+    sink_class = CSVConn
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._write_header = True
+        if self._file_exists:
+            self._write_header = False
+
+    @property
+    def _file_exists(self):
+        return isfile(self.sink.filepath)
+
+    def run(self):
+        """
+        The core function that is executed by the airflow operator class.
+        """
+        with self.source:
+            data = self.get_data()
+            data = [*data]  # unpack the generater
+            if data:
+                with self.sink:
+                    for item in data:
+                        item = self.transform_data(item)
+                        self.load_data(item, self._write_header)
+                    self.log.info("Data Load Success!")
+
+            else:
+                raise AirflowSkipException("No data available!")
+
+
+class CSVToText(SourceToSink):
+
+    source_class = CSVConn
+    sink_class = TextConn
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._write_header = True
+        if self._file_exists:
+            self._write_header = False
+
+    @property
+    def _file_exists(self):
+        return isfile(self.sink.filepath)
+
+    def run(self):
+        """
+        The core function that is executed by the airflow operator class.
+        """
+        with self.source:  # open connection with the source
+            data = self.get_data()
+            data = [
+                *data
+            ]  # unpackage generator, since we cannot tell if the file exist with generator.
+
+            if (
+                data
+            ):  # reason to check if the file has data, airflow will process, if file do no has data, the airflow will skip
+                with self.sink:
+                    for row in data:
+                        row = self.transform_data(row)
+                        self.load_data(row, self._write_header)
+                    self.log.info("Data Successfully Loaded!")
+
+            else:
+                raise AirflowSkipException("No data available!")
+
+
+# if __name__ == '__main__':
+#     source_kwargs = {'date': '2021-07'}
+#     sink_kwargs = {'is_source':False}
+
+#     kwargs = {
+#         'source_kwargs': source_kwargs,
+#         'sink_kwargs': sink_kwargs,
+#     }
+
+#     action_class = CSVToText(**kwargs)
+#     action_class.run()
+#     print('success!')
