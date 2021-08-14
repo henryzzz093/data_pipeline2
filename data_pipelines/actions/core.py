@@ -108,53 +108,39 @@ class CSVToCSV(SourceToSink):
                 raise AirflowSkipException("No data available!")
 
 
-class CSVToText(SourceToSink):
+class TextToText(SourceToSink):
 
-    source_class = CSVConn
+    source_class = TextConn
     sink_class = TextConn
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self._write_header = True
-        if self._file_exists:
-            self._write_header = False
+    def transform_data(self, data):
+        return data.upper()
 
-    @property
-    def _file_exists(self):
-        return isfile(self.sink.filepath)
 
     def run(self):
         """
         The core function that is executed by the airflow operator class.
         """
-        with self.source:  # open connection with the source
-            data = self.get_data()
-            data = [
-                *data
-            ]  # unpackage generator, since we cannot tell if the file exist with generator.
-
-            if (
-                data
-            ):  # reason to check if the file has data, airflow will process, if file do no has data, the airflow will skip
-                with self.sink:
-                    for row in data:
-                        row = self.transform_data(row)
-                        self.load_data(row, self._write_header)
-                    self.log.info("Data Successfully Loaded!")
-
-            else:
-                raise AirflowSkipException("No data available!")
+        with self.source,self.sink:
+            for line in self.source.get_data():
+                line = self.transform_data(line)
+                self.load_data(line)
+            self.log.info('Data Load Success!')
+                
 
 
-# if __name__ == '__main__':
-#     source_kwargs = {'date': '2021-07'}
-#     sink_kwargs = {'is_source':False}
+       
 
-#     kwargs = {
-#         'source_kwargs': source_kwargs,
-#         'sink_kwargs': sink_kwargs,
-#     }
 
-#     action_class = CSVToText(**kwargs)
-#     action_class.run()
-#     print('success!')
+if __name__ == '__main__':
+    source_kwargs = {'date': '2021-07'}
+    sink_kwargs = {'is_source':False}
+
+    kwargs = {
+        'source_kwargs': source_kwargs,
+        'sink_kwargs': sink_kwargs,
+    }
+
+    action_class = TextToText(**kwargs)
+    action_class.run()
+    print('success!')

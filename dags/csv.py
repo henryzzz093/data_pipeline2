@@ -3,7 +3,7 @@ import datetime
 
 import airflow
 
-from data_pipelines.actions.core import CSVToCSV, CSVToText
+from data_pipelines.actions.core import CSVToCSV, TextToText
 from data_pipelines.airflow.operator import ActionOperator
 
 dag = airflow.DAG(
@@ -27,7 +27,7 @@ kwargs = {
 }
 
 with dag:
-    task1 = ActionOperator(action_class=CSVToText, dag=dag, **kwargs)
-    # task2 = ActionOperator(action_class=CSVToText, dag=dag2, **kwargs)
+    task1 = ActionOperator(action_class=TextToText, dag=dag, **kwargs)
+    # task2 = ActionOperator(action_class=TextToText, dag=dag2, **kwargs)
     task1
     # task2

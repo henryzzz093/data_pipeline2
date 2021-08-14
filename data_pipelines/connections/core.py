@@ -69,8 +69,24 @@ class BaseConn(ABC):
         """
         pass
 
+class FileConn(BaseConn):
 
-class CSVConn(BaseConn):
+    def connect(self):
+        """
+        Establishes connection to file
+        """
+        self.conn = open(self.filepath, self.file_type)
+        self.log.info("connection success")
+
+    def close(self):
+        """
+        Closes conenction to file.
+        """
+        self.conn.close()
+        self.log.info("connection closed")
+    
+    
+class CSVConn(FileConn):
     """
     Connection class used to :
     1. establish connection to csv files
@@ -96,19 +112,6 @@ class CSVConn(BaseConn):
             "connections", f"data/{file_dir}/{filename}.csv"
         )
 
-    def connect(self):
-        """
-        Establishes connection to file
-        """
-        self.conn = open(self.filepath, self.file_type)
-        self.log.info("connection success")
-
-    def close(self):
-        """
-        Closes conenction to file.
-        """
-        self.conn.close()
-        self.log.info("connection closed")
 
     def get_data(self):
         """
@@ -131,7 +134,7 @@ class CSVConn(BaseConn):
         writer.writerow(data)
 
 
-class TextConn(BaseConn):
+class TextConn(FileConn):
     """
     Connection class used to :
     1. establish connection to csv files
@@ -151,60 +154,42 @@ class TextConn(BaseConn):
             file_dir = "input"
             filename = "raw_data"
         else:
-            self.file_type = "a"  # noqa:E501 append if file exist it will just append, write function will overwrite the file if the file does exist.
+            self.file_type = "w"  # noqa:E501 append if file exist it will just append, write function will overwrite the file if the file does exist.
             file_dir = "output"
             filename = "output_data"
 
         self.filepath = dirname(abspath(__file__)).replace(
-            "connections", f"data/{file_dir}/{filename}.text"
+            "connections", f"data/{file_dir}/{filename}.txt"
         )
 
-    def connect(self):
-        """
-        Establishes connection to file
-        """
-        self.conn = open(self.filepath, self.file_type)
-        self.log.info("connection success")
-
-    def close(self):
-        """
-        Closes conenction to file.
-        """
-        self.conn.close()
-        self.log.info("connection closed")
 
     def get_data(self):
         """
         Contains logic to retrieve data from csv file
         """
         self.log.info(f"Retrieving data for: {self.data}")
-        reader = csv.DictReader(self.conn)
-        for row in reader:
-            if self.data in row["Date"]:  # filtering
-                yield row
-
-    def load_data(self, data, write_header, *args, **kwargs):
+        for line in self.conn.readlines():
+            yield line
+        
+    def load_data(self, data, *args, **kwargs):
         """
         Contains logic to write data to text file.
         """
-        writer = csv.DictWriter(self.conn, fieldnames=data.keys())
-        if write_header:
-            self.log.info("Writting header")
-            writer.writeheader()
-        writer.writerow(data)
+        for line in data:
+            self.conn.write(line)
+
+        
+        
 
 
-# if __name__ == '__main__':
+if __name__ == '__main__':
 
-#     source_kwargs = {"date": "2021-07-30"}
-#     source_class = CSVConn(**source_kwargs)
+    source_class = TextConn()
 
-#     sink_kwargs = {'is_source': False}
-#     sink_class = TextConn(**sink_kwargs)
+    sink_kwargs = {'is_source': False}
+    sink_class = TextConn(**sink_kwargs)
 
-#     write_header = True
-#     with source_class, sink_class:
-#         for row in source_class.get_data():
-#             print(row)
-#             sink_class.load_data(row, write_header)
-#             write_header = False
+    with source_class, sink_class:
+        for row in source_class.get_data():
+            print(row)
+            sink_class.load_data(row)
