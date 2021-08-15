@@ -7,14 +7,14 @@ from data_pipelines.actions.core import CSVToCSV, TextToText
 from data_pipelines.airflow.operator import ActionOperator
 
 dag = airflow.DAG(
-    dag_id="csv-to-text",
+    dag_id="text-to-text",
     start_date=datetime.datetime(2021, 6, 30),
     end_date=datetime.datetime(2021, 7, 30),
     schedule_interval="@daily",
 )
 
 # dag2 = airflow.DAG(
-#     dag_id = 'csv-to-text',
+#     dag_id = 'csv-to-csv',
 #     start_date=datetime.datetime(2021, 6, 30),
 #     end_date=datetime.datetime(2021, 7, 30),
 #     schedule_interval="@daily",
@@ -28,6 +28,6 @@ kwargs = {
 
 with dag:
     task1 = ActionOperator(action_class=TextToText, dag=dag, **kwargs)
-    # task2 = ActionOperator(action_class=TextToText, dag=dag2, **kwargs)
+    task2 = ActionOperator(action_class=CSVToCSV, dag=dag, **kwargs)
     task1
-    # task2
+    task2
