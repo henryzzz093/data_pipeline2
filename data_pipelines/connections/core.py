@@ -11,7 +11,7 @@ class BaseConn(ABC):
     Based connection class that should be inherited.
     """
 
-    def __init__(
+    def __init__( # constructor for BaseConn class, initialize variables
         self,
         host=None,
         login=None,
@@ -75,14 +75,14 @@ class FileConn(BaseConn):
         """
         Establishes connection to file
         """
-        self.conn = open(self.filepath, self.file_type)
+        self.conn = open(self.filepath, self.file_type) # open up a connection toward the selected path and files
         self.log.info("connection success")
 
     def close(self):
         """
         Closes conenction to file.
         """
-        self.conn.close()
+        self.conn.close()  
         self.log.info("connection closed")
     
     
@@ -137,8 +137,8 @@ class CSVConn(FileConn):
 class TextConn(FileConn):
     """
     Connection class used to :
-    1. establish connection to csv files
-    2. get data from csv files
+    1. establish connection to text files
+    2. get data from text files
     3. load data to text files
     """
 
