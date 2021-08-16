@@ -2,7 +2,7 @@ import logging
 from abc import ABC, abstractmethod
 from os.path import isfile
 
-# from airflow.exceptions import AirflowSkipException
+from airflow.exceptions import AirflowSkipException
 from jinja2 import Environment, PackageLoader
 
 from data_pipelines.connections.core import CSVConn, TextConn

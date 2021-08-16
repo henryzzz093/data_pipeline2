@@ -23,9 +23,9 @@ with dag:
         }
 
         if pipeline == 'csv-to-csv':
-            kwargs['date'] = "{{ ds }}"
+            kwargs['source_kwargs']= {'date': '{{ ds }}'}
             action_class = CSVToCSV
-        
+
         if pipeline == 'text-to-text':
             action_class = TextToText
 
