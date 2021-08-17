@@ -96,7 +96,7 @@ class CSVConn(FileConn):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.data = kwargs.get("date")
+        self.date = kwargs.get("date")
         self.is_source = kwargs.get("is_source", True)
 
         if self.is_source:
@@ -117,10 +117,10 @@ class CSVConn(FileConn):
         """
         Contains logic to retrieve data from csv file
         """
-        self.log.info(f"Retrieving data for: {self.data}")
+        self.log.info(f"Retrieving data for: {self.date}")
         reader = csv.DictReader(self.conn)
         for row in reader:
-            if self.data in row["Date"]:  # filtering
+            if self.date in row["Date"]:  # filtering
                 yield row
 
     def load_data(self, data, write_header, *args, **kwargs):
