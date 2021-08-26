@@ -23,7 +23,7 @@ with dag:
         }
 
         if pipeline == 'csv-to-csv':
-            kwargs['source_kwargs'] = "{'date': {{ ds }}"}
+            kwargs['source_kwargs'] = {'date': '{{ ds }}'}
             action_class = CSVToCSV
         
         
