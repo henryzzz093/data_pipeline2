@@ -180,7 +180,7 @@ class TextConn(FileConn):
         for line in data:
             self.conn.write(line)
 
-class jsonConn(FileConn):
+class JsonConn(FileConn):
     """
     Connection class used to :
     1. establish connection to json files
@@ -190,7 +190,7 @@ class jsonConn(FileConn):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.data = kwargs.get(data)
+        self.data = kwargs.get("date")
         self.is_source = kwargs.get(
             'is_source', True
         )
@@ -214,15 +214,16 @@ class jsonConn(FileConn):
         Contains logic to retrieve data from json file
         """
         self.log.info(f"Retrieving data for: {self.data}")
-        # for line in self.conn.readlines():
-        #     yield line
+        for line in self.conn.readlines():
+            yield line
+        
         
     def load_data(self, data, *args, **kwargs):
         """
         Contains logic to write data to json file.
         """
-        # for line in data:
-        #     self.conn.write(line)
+        for line in data:
+            self.conn.write(line)
 
 
 
@@ -234,10 +235,10 @@ class jsonConn(FileConn):
 
 if __name__ == '__main__':
 
-    source_class = TextConn()
+    source_class = JsonConn()
 
     sink_kwargs = {'is_source': False}
-    sink_class = TextConn(**sink_kwargs) #set this to true for testing TextConn
+    sink_class = JsonConn(**sink_kwargs) #set this to true for testing TextConn
     # sink_class = CSVConn(**sink_kwargs)
 
     write_header = True

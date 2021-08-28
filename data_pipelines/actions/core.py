@@ -5,7 +5,7 @@ from os.path import isfile
 from airflow.exceptions import AirflowSkipException
 from jinja2 import Environment, PackageLoader
 
-from data_pipelines.connections.core import CSVConn, TextConn
+from data_pipelines.connections.core import CSVConn, TextConn, JsonConn
 
 DEFAULT_LOGGER = logging.getLogger(__name__)
 
@@ -127,6 +127,19 @@ class TextToText(SourceToSink):
                 self.load_data(line)
             self.log.info('Data Load Success!')
                 
+class JsonToJson(SourceToSink):
+
+    source_class = JsonConn
+    sink_class = JsonConn
+
+    def run(self):
+        """
+        The core function that is executed by the airflow operator class.
+        """
+        with self.source,self.sink:
+            for line in self.source.get_data():
+                self.load_data(line)
+            self.log.info('Data Load Success!')
 
 
        
@@ -141,6 +154,6 @@ if __name__ == '__main__':
         'sink_kwargs': sink_kwargs,
     }
 
-    action_class = TextToText(**kwargs)
+    action_class = JsonToJson(**kwargs)
     action_class.run()
     print('success!')
