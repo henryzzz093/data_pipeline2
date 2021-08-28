@@ -116,7 +116,7 @@ class CSVConn(FileConn):
 
     def get_data(self):
         """
-        Contains logic to retrieve data from csv file
+        Contains logic to retrieve data from csv file.
         """
         self.log.info(f"Retrieving data for: {self.date}")
         reader = csv.DictReader(self.conn)
