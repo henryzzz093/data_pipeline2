@@ -1,6 +1,6 @@
 import csv
-import logging
 import json
+import logging
 from abc import ABC, abstractmethod
 from os.path import abspath, dirname
 
@@ -129,7 +129,7 @@ class CSVConn(FileConn):
         Contains logic to write data to csv file.
         """
         
-        writer = csv.DictWriter(self.conn, filednames= data.key())
+        writer = csv.DictWriter(self.conn, fieldnames=data.keys())
         if write_header:
             self.log.info("Writting header")
             writer.writeheader()

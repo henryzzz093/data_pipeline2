@@ -2,7 +2,7 @@ import datetime
 
 import airflow
 
-from data_pipelines.actions.core import CSVToCSV, TextToText, CSVToJsonl
+from data_pipelines.actions.core import CSVToCSV, CSVToJsonl, TextToText
 from data_pipelines.airflow.operator import ActionOperator
 
 dag = airflow.DAG(
