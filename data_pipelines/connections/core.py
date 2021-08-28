@@ -97,7 +97,7 @@ class CSVConn(FileConn):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.date = kwargs.get("date")
+        self.date = kwargs.get("date")  #?
         self.is_source = kwargs.get("is_source", True)
 
         if self.is_source:
@@ -146,7 +146,7 @@ class TextConn(FileConn):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.data = kwargs.get("date")  # store the date
+        self.data = kwargs.get("date")  # store the date  # for txt file?
         self.is_source = kwargs.get(
             "is_source", True
         )  # store the is_source, or set default to True
@@ -170,7 +170,7 @@ class TextConn(FileConn):
         Contains logic to retrieve data from csv file
         """
         self.log.info(f"Retrieving data for: {self.data}")
-        for line in self.conn.readlines():
+        for line in self.conn.readlines():   # file.readlines() return each lines from the file
             yield line
         
     def load_data(self, data, *args, **kwargs):
@@ -180,7 +180,7 @@ class TextConn(FileConn):
         for line in data:
             self.conn.write(line)
 
-class JsonConn(FileConn):
+class JsonlConn(FileConn):
     """
     Connection class used to :
     1. establish connection to json files
@@ -190,7 +190,6 @@ class JsonConn(FileConn):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.data = kwargs.get("date")
         self.is_source = kwargs.get(
             'is_source', True
         )
@@ -206,24 +205,20 @@ class JsonConn(FileConn):
             filename = 'output_data'
 
         self.filepath = dirname(abspath(__file__)).replace(
-            'connections', f"data/{file_dir}/{filename}.json"
+            'connections', f"data/{file_dir}/{filename}.jsonl"
         )
-    
+        
     def get_data(self):
-        """
-        Contains logic to retrieve data from json file
-        """
-        self.log.info(f"Retrieving data for: {self.data}")
-        for line in self.conn.readlines():
-            yield line
-        
-        
+        pass
+
+
     def load_data(self, data, *args, **kwargs):
         """
         Contains logic to write data to json file.
-        """
-        for line in data:
-            self.conn.write(line)
+        """ 
+        self.conn.write(data)
+
+            
 
 
 
@@ -235,19 +230,20 @@ class JsonConn(FileConn):
 
 if __name__ == '__main__':
 
-    source_class = JsonConn()
+    source_class = CSVConn(date="2021-06-30")
 
     sink_kwargs = {'is_source': False}
-    sink_class = JsonConn(**sink_kwargs) #set this to true for testing TextConn
-    # sink_class = CSVConn(**sink_kwargs)
+    sink_class = JsonlConn(**sink_kwargs) #set this to true for testing TextConn
+    
 
-    write_header = True
-
-    with source_class, sink_class:
+    with source_class, sink_class :
         for row in source_class.get_data():
-            print(row)
-            sink_class.load_data(row)
+            # print(row)
+            # sink_class.load_data(row)
             # sink_class.load_data(row, write_header)
             # write_header = False
+            #json.dump(json.loads(json.dumps(row)), f) #json.dumps turns ordered dict to a string
+                                                      #json.loads turns string to a dictionary
+                                                      #json.dump save dictionary to json file
 
-
+            sink_class.load_data(row)

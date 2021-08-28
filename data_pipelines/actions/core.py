@@ -1,11 +1,12 @@
 import logging
+import json
 from abc import ABC, abstractmethod
 from os.path import isfile
 
 from airflow.exceptions import AirflowSkipException
 from jinja2 import Environment, PackageLoader
 
-from data_pipelines.connections.core import CSVConn, TextConn, JsonConn
+from data_pipelines.connections.core import CSVConn, TextConn, JsonlConn
 
 DEFAULT_LOGGER = logging.getLogger(__name__)
 
@@ -126,27 +127,25 @@ class TextToText(SourceToSink):
                 line = self.transform_data(line)
                 self.load_data(line)
             self.log.info('Data Load Success!')
+
+
                 
-class JsonToJson(SourceToSink):
+class CSVToJsonl(SourceToSink):
 
-    source_class = JsonConn
-    sink_class = JsonConn
+    source_class = CSVConn
+    sink_class = JsonlConn
 
-    def run(self):
-        """
-        The core function that is executed by the airflow operator class.
-        """
-        with self.source,self.sink:
-            for line in self.source.get_data():
-                self.load_data(line)
-            self.log.info('Data Load Success!')
+    def transform_data(self, data):
+        return f'{json.dumps(data)}\n'
+
+    
 
 
        
 
 
 if __name__ == '__main__':
-    source_kwargs = {'date': '2021-07'}
+    source_kwargs = {'date': '2021-07-02'}
     sink_kwargs = {'is_source':False}
 
     kwargs = {
@@ -154,6 +153,6 @@ if __name__ == '__main__':
         'sink_kwargs': sink_kwargs,
     }
 
-    action_class = JsonToJson(**kwargs)
+    action_class = CSVToJsonl(**kwargs)
     action_class.run()
     print('success!')

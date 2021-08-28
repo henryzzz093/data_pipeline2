@@ -2,7 +2,7 @@ import datetime
 
 import airflow
 
-from data_pipelines.actions.core import CSVToCSV, TextToText
+from data_pipelines.actions.core import CSVToCSV, TextToText, CSVToJsonl
 from data_pipelines.airflow.operator import ActionOperator
 
 dag = airflow.DAG(
@@ -13,7 +13,7 @@ dag = airflow.DAG(
     schedule_interval = '@daily'
 )
 
-pipelines = ['csv-to-csv', 'text-to-text']
+pipelines = ['csv-to-csv', 'text-to-text', 'csv-to-jsonl']
 
 with dag:
     for pipeline in pipelines:
@@ -29,6 +29,10 @@ with dag:
         
         if pipeline == 'text-to-text':
             action_class = TextToText
+
+        if pipeline == 'csv-to-jsonl':
+            kwargs['source_kwargs'] = {'date': '{{ ds }}'}
+            action_class = CSVToJsonl
 
         run_pipeline = ActionOperator(action_class = action_class, dag = dag, **kwargs)
 
