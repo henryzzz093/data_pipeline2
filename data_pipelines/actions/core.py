@@ -138,6 +138,25 @@ class CSVToJsonl(SourceToSink):
     def transform_data(self, data):
         return f'{json.dumps(data)}\n'
 
+    def run(self):
+        """
+        The core function that is executed by the airflow operator class
+        """
+
+        with self.source:
+            data = self.get_data()
+            data = [*data] # unpack the generator
+            if data: # if the date exists, then process
+                with self.sink:
+                    for item in data:
+                        item = self.transform_data(item)
+                        self.log.info(str(item))
+                        self.load_data(item)
+                    self.log.info("Data Load Success!")
+
+            else: # otherwise, raise Airflow Skip Execption and skip the current date
+                raise AirflowSkipException('No Data Available on that date !')
+
     
 
 
