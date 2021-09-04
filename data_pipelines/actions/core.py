@@ -1,12 +1,18 @@
 import json
 import logging
+import os
 from abc import ABC, abstractmethod
 from os.path import isfile
 
 from airflow.exceptions import AirflowSkipException
 from jinja2 import Environment, PackageLoader
 
-from data_pipelines.connections.core import CSVConn, JsonlConn, TextConn
+from data_pipelines.connections.core import (
+    CSVConn,
+    JsonlConn,
+    PostgresConn,
+    TextConn,
+)
 
 DEFAULT_LOGGER = logging.getLogger(__name__)
 
@@ -119,27 +125,25 @@ class TextToText(SourceToSink):
     def transform_data(self, data):
         return data.upper()
 
-
     def run(self):
         """
         The core function that is executed by the airflow operator class.
         """
-        with self.source,self.sink:
+        with self.source, self.sink:
             for line in self.source.get_data():
                 line = self.transform_data(line)
                 self.log.info(str(line))
                 self.load_data(line)
-            self.log.info('Data Load Success!')
+            self.log.info("Data Load Success!")
 
 
-                
 class CSVToJsonl(SourceToSink):
 
     source_class = CSVConn
     sink_class = JsonlConn
 
     def transform_data(self, data):
-        return f'{json.dumps(data)}\n'
+        return f"{json.dumps(data)}\n"
 
     def run(self):
         """
@@ -148,8 +152,8 @@ class CSVToJsonl(SourceToSink):
 
         with self.source:
             data = self.get_data()
-            data = [*data] # unpack the generator
-            if data: # if the date exists, then process
+            data = [*data]  # unpack the generator
+            if data:  # if the date exists, then process
                 with self.sink:
                     for item in data:
                         item = self.transform_data(item)
@@ -157,24 +161,58 @@ class CSVToJsonl(SourceToSink):
                         self.load_data(item)
                     self.log.info("Data Load Success!")
 
-            else: # otherwise, raise Airflow Skip Execption and skip the current date
-                raise AirflowSkipException('No Data Available on that date !')
-
-    
+            else:  # otherwise, raise Airflow Skip Execption and skip the current date
+                raise AirflowSkipException("No Data Available on that date !")
 
 
-       
+class CSVToPostgres(SourceToSink):
+    source_class = CSVConn
+    sink_class = PostgresConn
+
+    def transform_data(self, data):
+        for row in data:
+            columns = [key.lower().replace(" ", "_") for key in row.keys()]
+            values = list(row.values())
+            dict1 = dict(zip(columns, values))
+            yield dict1
+
+    def run(self):
+        """
+        The core function that is executed by the airflow operator class
+        """
+        with self.source:
+            data = self.get_data()
+            data = [*data]  # unpack the generator
+            if data:  # if the date exists, then process
+                with self.sink:
+                    data = self.transform_data(data)
+                    self.load_data(data)
+                self.log.info("Data Load Success!")
+
+            else:  # otherwise, raise Airflow Skip Execption and skip the current date
+                raise AirflowSkipException("No Data Available on that date !")
 
 
-if __name__ == '__main__':
-    source_kwargs = {'date': '2021-07-02'}
-    sink_kwargs = {'is_source':False}
+if __name__ == "__main__":
+    from dotenv import load_dotenv
 
-    kwargs = {
-        'source_kwargs': source_kwargs,
-        'sink_kwargs': sink_kwargs,
+    source_kwargs = {"date": "2021-07-02"}
+
+    load_dotenv()
+    sink_kwargs = {
+        "port": "5432",
+        "username": os.getenv("PG_USERNAME"),
+        "password": os.getenv("PG_PASSWORD"),
+        "database": "test",
+        "schema": "test",
+        "table": "csv",
     }
 
-    action_class = CSVToJsonl(**kwargs)
+    kwargs = {
+        "source_kwargs": source_kwargs,
+        "sink_kwargs": sink_kwargs,
+    }
+
+    action_class = CSVToPostgres(**kwargs)
     action_class.run()
-    print('success!')
+    print("success!")

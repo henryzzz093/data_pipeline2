@@ -17,5 +17,6 @@ setup(
         "pre-commit",
         "psycopg2",
         "requests",
+        "python-dotenv",
     ],
 )
