@@ -73,6 +73,7 @@ class SourceToSink(BaseAction):
         with self.source, self.sink:
             for data in self.source.get_data():
                 data = self.transform_data(data)
+                self.log.info(str(data))
                 self.load_data(data)
             self.log.info("Data Load Success!")
 
@@ -102,6 +103,7 @@ class CSVToCSV(SourceToSink):
                 with self.sink:
                     for item in data:
                         item = self.transform_data(item)
+                        self.log.info(str(item))
                         self.load_data(item, self._write_header)
                     self.log.info("Data Load Success!")
 
@@ -125,6 +127,7 @@ class TextToText(SourceToSink):
         with self.source,self.sink:
             for line in self.source.get_data():
                 line = self.transform_data(line)
+                self.log.info(str(line))
                 self.load_data(line)
             self.log.info('Data Load Success!')
 
