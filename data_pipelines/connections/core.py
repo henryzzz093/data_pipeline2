@@ -225,8 +225,8 @@ class JsonlConn(FileConn):
 class DBConn(BaseConn):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        # self.host = kwargs.get("host", "host.docker.internal")
-        self.host = kwargs.get("host", "localhost")
+        self.host = kwargs.get("host", "host.docker.internal")
+        #self.host = kwargs.get("host", "localhost")
         self.port = kwargs.get("port")
         self.username = kwargs.get("username")
         self.password = kwargs.get("password")
@@ -360,6 +360,7 @@ if __name__ == "__main__":
         "password": os.getenv("MySQL_PASSWORD"),
         "schema":"sys",
         "database": "sys",
+        "table":"test",
     }
     sink_class = MySQLConn(**kwargs)
 

@@ -8,6 +8,7 @@ from data_pipelines.actions.core import (
     CSVToJsonl,
     CSVToPostgres,
     TextToText,
+    CSVTOMySQL,
 )
 from data_pipelines.airflow.operator import ActionOperator
 
@@ -18,7 +19,7 @@ dag = airflow.DAG(
     schedule_interval="@daily",
 )
 
-pipelines = ["csv-to-csv", "text-to-text", "csv-to-jsonl", "csv-to-postgres"]
+pipelines = ["csv-to-csv", "text-to-text", "csv-to-jsonl", "csv-to-postgres", "csv-to-MySQL"]
 
 with dag:
     for pipeline in pipelines:
@@ -49,6 +50,21 @@ with dag:
                 "table": "csv",
             }
             action_class = CSVToPostgres
+
+        if pipeline == "csv-to-MySQL":
+            kwargs['source_kwargs'] = {"date": "{{ ds }}"}
+            kwargs['sink_kwargs'] = {
+                "port": '3306',
+                "username": os.getenv("MySQL_USERNAME"),
+                "password": os.getenv("MySQL_PASSWORD"),
+                "schema":"sys",
+                "database": "sys",
+                "table":"test",
+            }
+            action_class = CSVTOMySQL
+
+        
+
 
         run_pipeline = ActionOperator(
             action_class=action_class, dag=dag, **kwargs
