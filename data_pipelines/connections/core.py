@@ -6,6 +6,7 @@ from abc import ABC, abstractmethod
 from os.path import abspath, dirname
 
 import psycopg2
+import mysql.connector as mysql
 
 
 class BaseConn(ABC):
@@ -224,7 +225,8 @@ class JsonlConn(FileConn):
 class DBConn(BaseConn):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.host = kwargs.get("host", "host.docker.internal")
+        # self.host = kwargs.get("host", "host.docker.internal")
+        self.host = kwargs.get("host", "localhost")
         self.port = kwargs.get("port")
         self.username = kwargs.get("username")
         self.password = kwargs.get("password")
@@ -247,9 +249,9 @@ class PostgresConn(DBConn):
         self.port = kwargs.get("port", "5432")
 
     def connect(self):
-        print(
-            self.host, self.port, self.username, self.password, self.database
-        )
+        # print(
+        #     self.host, self.port, self.username, self.password, self.database
+        # )
         self.conn = psycopg2.connect(
             host=self.host,
             port=self.port,
@@ -287,23 +289,79 @@ class PostgresConn(DBConn):
                     self.log.warning(err)
                     self.conn.commit()
 
+class MySQLConn(DBConn):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        self.port = kwargs.get('port', '3306')
+
+    def connect(self):
+        '''
+        To test if we connected to the database
+        '''
+
+        print('******')
+        print(
+            self.host, self.port, self.username, self.password, self.database
+        )
+        self.conn = mysql.connect(
+            host = self.host,
+            port = self.port,
+            user = self.username,
+            password = self.password,
+            database = self.database,
+        )
+
+        mysql_cur = self.conn.cursor(prepared = True)
+        try:
+            mysql_cur.execute("SHOW VARIABLES WHERE variable_name = 'version'")
+            print(f'MySQL DB CONNECTED, CURRENT DB VERSION IS: {mysql_cur.fetchone()[1]}')
+        except mysql.IntegrityError as err:
+            print(f'unable to connect to db, mysql error: {err}')
+            exit(1)
+
+    def get_data(self):
+        pass
+
+    def get_data_full(self):
+        pass
+
+    def load_data(self, data):
+        with self.conn.cursor() as cursor:
+            for row in data:
+                try:
+                    columns = ', '.join(
+                        list(row.keys())
+                    ) # extract column names from dictionary
+                    values = list(
+                        row.values()
+                    ) # extract values from dictionary
+                    values_template = str(tuple('%s' for val in values)).replace("'", "") # create a placeholder value template
+                    sqlstatement = f'INSERT INTO {self.schema}.{self.table} ({columns}) VALUES {values_template}'
+                    cursor.execute(sqlstatement, values)
+                    self.conn.commit()
+
+                except mysql.IntegrityError as err:
+                    self.log.warning('Duplicate Found! {row}')
+                    self.log.warning(err)
+                    self.conn.commit()
+
+
+
 
 if __name__ == "__main__":
     from dotenv import load_dotenv
 
     load_dotenv()
     kwargs = {
-        "port": "5432",
-        "username": os.getenv("PG_USERNAME"),
-        "password": os.getenv("PG_PASSWORD"),
-        "database": "test",
+        # "host": "localhost",
+        "port": '3306',
+        "username": os.getenv("MySQL_USERNAME"),
+        "password": os.getenv("MySQL_PASSWORD"),
+        "schema":"sys",
+        "database": "sys",
     }
-    sink_class = PostgresConn(**kwargs)
+    sink_class = MySQLConn(**kwargs)
 
-    kwargs = {"date": "2021-07"}
-    source_class = CSVConn(**kwargs)
-
-    with source_class, sink_class:
-        data1 = source_class.get_data()
-        data2 = transform_data(data1)
-        sink_class.load_data(data2)
+    sink_class.connect()
+    

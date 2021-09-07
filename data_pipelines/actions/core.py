@@ -12,6 +12,7 @@ from data_pipelines.connections.core import (
     JsonlConn,
     PostgresConn,
     TextConn,
+    MySQLConn,
 )
 
 DEFAULT_LOGGER = logging.getLogger(__name__)
@@ -193,6 +194,35 @@ class CSVToPostgres(SourceToSink):
                 raise AirflowSkipException("No Data Available on that date !")
 
 
+class CSVTOMySQL(SourceToSink):
+    source_class = CSVConn
+    sink_class = MySQLConn
+
+    def transform_data(self, data):
+        for row in data:
+            columns = [key.lower().replace(' ', '_') for key in row.keys()] # get the columns name as a list()
+            values = list(row.values())
+            mydict = dict(zip(columns, values))
+            yield mydict
+
+    def run(self):
+        '''
+        The core function that is executed by the airflow operator class
+        '''
+        with self.source:
+            data = self.get_data()
+            data = [*data]
+            if data: 
+                with self.sink:
+                    data = self.transform_data(data)
+                    self.load_data(data)
+                self.log.info('Data Load Success!')
+
+            else:
+                raise AirflowSkipException('No Data Found on that date !')
+
+
+
 if __name__ == "__main__":
     from dotenv import load_dotenv
 
@@ -200,12 +230,13 @@ if __name__ == "__main__":
 
     load_dotenv()
     sink_kwargs = {
-        "port": "5432",
-        "username": os.getenv("PG_USERNAME"),
-        "password": os.getenv("PG_PASSWORD"),
-        "database": "test",
-        "schema": "test",
-        "table": "csv",
+        # "host": "localhost",
+        "port": '3306',
+        "username": os.getenv("MySQL_USERNAME"),
+        "password": os.getenv("MySQL_PASSWORD"),
+        "schema":"sys",
+        "database": "sys",
+        "table":"test",
     }
 
     kwargs = {
@@ -213,6 +244,6 @@ if __name__ == "__main__":
         "sink_kwargs": sink_kwargs,
     }
 
-    action_class = CSVToPostgres(**kwargs)
+    action_class = CSVTOMySQL(**kwargs)
     action_class.run()
     print("success!")

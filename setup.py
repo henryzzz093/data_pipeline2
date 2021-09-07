@@ -18,5 +18,6 @@ setup(
         "psycopg2",
         "requests",
         "python-dotenv",
+        "mysql-connector-python"
     ],
 )
