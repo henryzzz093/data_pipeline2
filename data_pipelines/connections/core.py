@@ -225,8 +225,8 @@ class JsonlConn(FileConn):
 class DBConn(BaseConn):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.host = kwargs.get("host", "host.docker.internal")
-        #self.host = kwargs.get("host", "localhost")
+        #self.host = kwargs.get("host", "host.docker.internal")
+        self.host = kwargs.get("host", "localhost")  # common this for testing
         self.port = kwargs.get("port")
         self.username = kwargs.get("username")
         self.password = kwargs.get("password")
@@ -315,12 +315,15 @@ class MySQLConn(DBConn):
         mysql_cur = self.conn.cursor(prepared = True)
         try:
             mysql_cur.execute("SHOW VARIABLES WHERE variable_name = 'version'")
-            print(f'MySQL DB CONNECTED, CURRENT DB VERSION IS: {mysql_cur.fetchone()[1]}')
+            result = mysql_cur.fetchone()[1]
+            print(f'MySQL DB CONNECTED, CURRENT DB VERSION IS: {result}')
+            self.log.info(f'MySQL DB CONNECTED, CURRENT DB VERSION IS: {result}')
         except mysql.IntegrityError as err:
             print(f'unable to connect to db, mysql error: {err}')
+            self.log.info(f'unable to connect to db, mysql error: {err}')
             exit(1)
 
-    def get_data(self):
+    def get_data(self): 
         pass
 
     def get_data_full(self):
