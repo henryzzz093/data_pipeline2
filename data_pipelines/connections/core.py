@@ -260,6 +260,18 @@ class PostgresConn(DBConn):
             database=self.database,
         )
 
+        postgres_cur = self.conn.cursor(prepared = True)
+        try:
+            postgres_cur.execute("SHOW VARIABLES WHERE variable_name = 'version'")
+            result = postgres_cur.fetchone()[1]
+            print(f'Postgres DB CONNECTED, CURRENT DB VERSION IS: {result}')
+            self.log.info(f'Postgres DB CONNECTED, CURRENT DB VERSION IS: {result}')
+        except psycopg2.IntegrityError as err:
+            print(f'unable to connect to db, Postgres error: {err}')
+            self.log.info(f'unable to connect to db, Postgres error: {err}')
+            exit(1)
+
+
     def get_data(self):
         pass
 
