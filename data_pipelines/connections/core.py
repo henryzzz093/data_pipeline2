@@ -226,7 +226,6 @@ class DBConn(BaseConn):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.host = kwargs.get("host", "host.docker.internal")
-        #self.host = kwargs.get("host", "localhost")  # common this for testing
         self.port = kwargs.get("port")
         self.username = kwargs.get("username")
         self.password = kwargs.get("password")
