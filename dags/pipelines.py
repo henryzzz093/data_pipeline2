@@ -45,23 +45,26 @@ with dag:
         if pipeline == "csv-to-postgres":
             kwargs["source_kwargs"] = {"date": "{{ ds }}"}
             kwargs["sink_kwargs"] = {
-                "port": "5432",
+                "host": "host.docker.internal",
+                "port": "5438",
                 "username": os.getenv("PG_USERNAME"),
                 "password": os.getenv("PG_PASSWORD"),
-                "database": "test",
-                "schema": "test",
-                "table": "csv",
+                "database": os.getenv("PG_DATABASE"),
+                "schema": os.getenv("PG_SCHEMA"),
+                "table": "stocks",
             }
             action_class = CSVToPostgres
 
         if pipeline == "csv-to-MySQL":
             kwargs['source_kwargs'] = {"date": "{{ ds }}"}  # airflow macros, {{ ds }}: the execution date as YYYY-MM-DD
             kwargs['sink_kwargs'] = {
-                "username": os.getenv("MySQL_USERNAME"),
-                "password": os.getenv("MySQL_PASSWORD"),
-                "schema":"sys",
-                "database": "sys",
-                "table":"test",
+                "host": "host.docker.internal",
+                "port": "3307",
+                "username": os.getenv("MYSQL_USERNAME"),
+                "password": os.getenv("MYSQL_PASSWORD"),
+                "database": os.getenv("MYSQL_DATABASE"),
+                "schema": os.getenv("MYSQL_SCHEMA"),
+                "table": "stocks",
             }
             action_class = CSVTOMySQL
 

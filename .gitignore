@@ -132,3 +132,4 @@ dmypy.json
 # customize
 logs/
 */data/output/output_data*
+dev/

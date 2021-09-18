@@ -245,5 +245,8 @@ if __name__ == "__main__":
     }
 
     action_class = CSVTOMySQL(**kwargs)
-    action_class.run()
-    print("success!")
+    with action_class.source:
+        data =  action_class.get_data()
+        data = action_class.transform_data(data)
+        for item in data:
+            print(item)

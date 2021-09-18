@@ -153,5 +153,32 @@ services:
       retries: 5
     restart: always
 
+  postgres2:
+      container_name: pg_container
+      image: postgres:13
+      restart: always
+      environment:
+        POSTGRES_USER: ${PG_USERNAME}
+        POSTGRES_PASSWORD: ${PG_PASSWORD}
+        POSTGRES_DB: ${PG_DATABASE}
+      ports:
+        - '5438:5432'
+      volumes:
+        - ./sql/postgres/create_table.sql:/docker-entrypoint-initdb.d/create_tables.sql
+
+  mysql:
+      container_name: ms_container
+      image: mysql
+      restart: always
+      environment:
+        MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD}
+        MYSQL_USER: ${MYSQL_USERNAME}
+        MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+        MYSQL_DATABASE: ${MYSQL_DATABASE}
+      ports:
+        - "3307:3306"
+      volumes:
+        - ./sql/mysql/create_table.sql:/docker-entrypoint-initdb.d/create_table.sql
+
 volumes:
   postgres-db-volume:
