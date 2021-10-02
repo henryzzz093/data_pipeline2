@@ -111,18 +111,10 @@ class TextToText(SourceToSink):
         """
         Turn all the data to uppercase
         """
-        return data.upper()
+        for line in data:
+            line = line.upper()
+            yield line
 
-    def run(self):
-        """
-        The core function that is executed by the airflow operator class.
-        """
-        with self.source, self.sink:
-            for line in self.source.get_data():
-                line = self.transform_data(line)
-                self.log.info(str(line))
-                self.load_data(line)
-            self.log.info("Data Load Success!")
 
 
 class CSVToJsonl(SourceToSink):
