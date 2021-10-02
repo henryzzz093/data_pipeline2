@@ -81,13 +81,13 @@ class FileConn(BaseConn):
         try:
             self.filepath = kwargs.pop('filepath')
         except KeyError as err:
-            self.log.warning('Filepath must be set!')
+            self.log.warning('filepath kwargs must be set!')
             raise KeyError(err)
 
         try:
             self.file_permission = kwargs.pop('file_permission')
         except KeyError as err:
-            self.log.warning('File_permission must be set!')
+            self.log.warning('file_permission kwargs must be set!')
             raise KeyError(err)
         
         if self.file_permission not in ('r', 'w'):
@@ -169,6 +169,16 @@ class TextConn(FileConn):
         self.log.info(f"Writing data to: {self.filepath}")
         for line in data:
             self.conn.write(line)
+
+class JsonConn(FileConn):
+    def get_data(self):
+        self.log.info('f"Retrieving data from: {self.filepath}')
+        yield json.load(self.conn)
+
+    def load_data(self,data):
+        self.log.info(f"Writing data to: {self.filepath}")
+        for item in data:
+            json.dump(item, self.conn, indent = 4)
 
 
 class JsonlConn(FileConn):
