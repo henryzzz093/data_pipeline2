@@ -15,7 +15,7 @@ setup(
         "interrogate",
         "jinja2",
         "pre-commit",
-        "psycopg2",
+        "psycopg2-binary",
         "requests",
         "python-dotenv",
         "mysql-connector-python"

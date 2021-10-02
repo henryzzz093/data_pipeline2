@@ -15,19 +15,22 @@ from data_pipelines.connections.core import (
     MySQLConn,
 )
 
-DEFAULT_LOGGER = logging.getLogger(__name__)
+logging.basicConfig()
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 
 class BaseAction(ABC):
     """
-    Base action calss that should be inherited from
+    Base action calss that should be inherited from ABC
+
+    Attributes:
+        log: the log string
     """
 
     def __init__(self, **kwargs):
-        self.log = DEFAULT_LOGGER
-        self.jinja_env = Environment(
-            loader=PackageLoader("data_pipelines", "templates")
-        )
+        self.log = logger
+    
 
     @abstractmethod
     def run(self):
@@ -78,52 +81,36 @@ class SourceToSink(BaseAction):
         The core function that is executed by the airflow operator class
         """
         with self.source, self.sink:
-            for data in self.source.get_data():
-                data = self.transform_data(data)
-                self.log.info(str(data))
-                self.load_data(data)
+            data = self.source.get_data()
+            data = self.transform_data(data)
+            self.load_data(data)
             self.log.info("Data Load Success!")
 
 
 class CSVToCSV(SourceToSink):
-    source_class = CSVConn
-    sink_class = CSVConn
+    """
+    This class contains the core logic to transport data
+    from a source CSV connection to a sink CSV connection performing all
+    applied transformation logic in the process
+    """
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self._write_header = True
-        if self._file_exists:
-            self._write_header = False
-
-    @property
-    def _file_exists(self):
-        return isfile(self.sink.filepath)
-
-    def run(self):
-        """
-        The core function that is executed by the airflow operator class.
-        """
-        with self.source:
-            data = self.get_data()
-            data = [*data]  # unpack the generater
-            if data:
-                with self.sink:
-                    for item in data:
-                        item = self.transform_data(item)
-                        self.log.info(str(item))
-                        self.load_data(item, self._write_header)
-                    self.log.info("Data Load Success!")
-
-            else:
-                raise AirflowSkipException("No data available!")
-
+    source_class = CSVConn # set the source_class to CSV connection
+    sink_class = CSVConn # set the sink_class to CSV connection
 
 class TextToText(SourceToSink):
+    """
+    This class contains the core logic to transport data
+    from a source Text connection to a sink Text connection performing all
+    applied transformation logic in the process
+    """
 
     source_class = TextConn
     sink_class = TextConn
 
     def transform_data(self, data):
+        """
+        Turn all the data to uppercase
+        """
         return data.upper()
 
     def run(self):
@@ -139,19 +126,27 @@ class TextToText(SourceToSink):
 
 
 class CSVToJsonl(SourceToSink):
+    """
+    This class contains the core logic to transport data
+    from a source CSV connection to a sink Json line connection performing all
+    applied transformation logic in the process
+    """
 
     source_class = CSVConn
     sink_class = JsonlConn
 
     def transform_data(self, data):
-        return f"{json.dumps(data)}\n"
+        """
+        For each line inside the file, it create a individual json string
+        """
+        return f"{json.dumps(data)}\n" 
 
     def run(self):
         """
         The core function that is executed by the airflow operator class
         """
 
-        with self.source:
+        with self.source: 
             data = self.get_data()
             data = [*data]  # unpack the generator
             if data:  # if the date exists, then process
@@ -167,10 +162,18 @@ class CSVToJsonl(SourceToSink):
 
 
 class CSVToPostgres(SourceToSink):
+    """
+    This class contains the core logic to transport data
+    from a source CSV connection to a sink Postgres connection performing all
+    applied transformation logic in the process
+    """
     source_class = CSVConn
     sink_class = PostgresConn
 
     def transform_data(self, data):
+        """
+        Extract the columns name, attributes from the data, constructing a new dictionary based on the keys and values
+        """
         for row in data:
             columns = [key.lower().replace(" ", "_") for key in row.keys()]
             values = list(row.values())
@@ -195,10 +198,16 @@ class CSVToPostgres(SourceToSink):
 
 
 class CSVTOMySQL(SourceToSink):
+    """
+    This class contains the core logic to transport data
+    from a source CSV connection to a sink MySQL connection performing all
+    applied transformation logic in the process
+    """
     source_class = CSVConn
     sink_class = MySQLConn
 
     def transform_data(self, data):
+    
         for row in data:
             columns = [key.lower().replace(' ', '_') for key in row.keys()] # get the columns name as a list()
             values = list(row.values())
@@ -223,27 +232,26 @@ class CSVTOMySQL(SourceToSink):
 
 
 
-if __name__ == "__main__":
+
+if __name__ == '__main__':
     from dotenv import load_dotenv
-
-    source_kwargs = {"date": "2021-07-02"}
-
+    
     load_dotenv()
+    source_kwargs = {
+        'filepath': '/Users/henryzou1/Documents/python/Python3/Project/mentoring/data_pipelines_2/data_pipeline2/data_pipelines/data/input/raw_data.csv',
+        'file_permission': 'r'
+    }
+    
     sink_kwargs = {
-        # "host": "localhost",
-        "port": '3306',
-        "username": os.getenv("MySQL_USERNAME"),
-        "password": os.getenv("MySQL_PASSWORD"),
-        "schema":"sys",
-        "database": "sys",
-        "table":"test",
+        'filepath': '/Users/henryzou1/Documents/python/Python3/Project/mentoring/data_pipelines_2/data_pipeline2/data_pipelines/data/output/output_data2.csv',
+        'file_permission': 'w'
     }
 
     kwargs = {
-        "source_kwargs": source_kwargs,
-        "sink_kwargs": sink_kwargs,
+        'source_kwargs': source_kwargs,
+        'sink_kwargs': sink_kwargs,
     }
 
-    action_class = CSVTOMySQL(**kwargs)
+    action_class = CSVToCSV(**kwargs)
     action_class.run()
-    print("success!")
+    print('Success!')
