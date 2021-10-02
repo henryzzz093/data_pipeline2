@@ -233,25 +233,3 @@ class CSVTOMySQL(SourceToSink):
 
 
 
-if __name__ == '__main__':
-    from dotenv import load_dotenv
-    
-    load_dotenv()
-    source_kwargs = {
-        'filepath': '/Users/henryzou1/Documents/python/Python3/Project/mentoring/data_pipelines_2/data_pipeline2/data_pipelines/data/input/raw_data.csv',
-        'file_permission': 'r'
-    }
-    
-    sink_kwargs = {
-        'filepath': '/Users/henryzou1/Documents/python/Python3/Project/mentoring/data_pipelines_2/data_pipeline2/data_pipelines/data/output/output_data2.csv',
-        'file_permission': 'w'
-    }
-
-    kwargs = {
-        'source_kwargs': source_kwargs,
-        'sink_kwargs': sink_kwargs,
-    }
-
-    action_class = CSVToCSV(**kwargs)
-    action_class.run()
-    print('Success!')
