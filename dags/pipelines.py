@@ -29,34 +29,33 @@ with dag:
         kwargs = {
             "task_id": f"execute_{pipeline}",
             "sink_kwargs": {"is_source": False},
+            "source_kwargs":{'is_source': True, \
+                             "date": "{{ ds }}"}  # airflow macros, {{ ds }}: the execution date as YYYY-MM-DD
+
         }
 
         if pipeline == "csv-to-csv":
-            kwargs["source_kwargs"] = {"date": "{{ ds }}"}
             action_class = CSVToCSV
 
         if pipeline == "text-to-text":
             action_class = TextToText
 
         if pipeline == "csv-to-jsonl":
-            kwargs["source_kwargs"] = {"date": "{{ ds }}"}
             action_class = CSVToJsonl
 
         if pipeline == "csv-to-postgres":
-            kwargs["source_kwargs"] = {"date": "{{ ds }}"}
             kwargs["sink_kwargs"] = {
-                "host": "host.docker.internal",
+                "host": "host.docker.internal", # map the container to local host
                 "port": "5438",
                 "username": os.getenv("PG_USERNAME"),
                 "password": os.getenv("PG_PASSWORD"),
                 "database": os.getenv("PG_DATABASE"),
                 "schema": "henry",
                 "table": "stocks",
-            }
+            } # set the connection by using (host, port, username, pw, db)
             action_class = CSVToPostgres
 
-        if pipeline == "csv-to-MySQL":
-            kwargs['source_kwargs'] = {"date": "{{ ds }}"}  # airflow macros, {{ ds }}: the execution date as YYYY-MM-DD
+        if pipeline == "csv-to-MySQL": 
             kwargs['sink_kwargs'] = {
                 "host": "host.docker.internal",
                 "port": "3307",
@@ -70,7 +69,6 @@ with dag:
             action_class = CSVTOMySQL
 
         if pipeline == 'csv-to-s3':
-            kwargs['source_kwargs'] = {"date": "{{ ds }}"} 
             kwargs['sink_kwargs'] = {
                 'AWS_ACCESS_KEY': os.getenv('AWS_ACCESS_KEY'),
                 'AWS_SECRET_KEY': os.getenv('AWS_SECRET_KEY'),
