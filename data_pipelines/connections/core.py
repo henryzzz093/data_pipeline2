@@ -137,8 +137,6 @@ class CSVConn(FileConn):
         """
         Contains logic to write data to csv file.
         """
-
-        self.log.info("Writing data to: {self.filepath}")
         for row in data:
             writer = csv.DictWriter(self.conn, fieldnames=row.keys())
             if self.write_header: # allow us to write the header only once
