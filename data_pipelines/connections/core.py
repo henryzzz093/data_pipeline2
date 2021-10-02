@@ -355,22 +355,3 @@ class MySQLConn(DBConn):
 
 
 
-if __name__ == '__main__':
-    source_kwargs = {
-        'filepath' : '/Users/henryzou1/Documents/python/Python3/Project/mentoring/data_pipelines_2/data_pipeline2/data_pipelines/data/input/raw_data.txt',
-        'file_permission' : 'r',
-    }
-
-    source_conn = TextConn(**source_kwargs)
-    
-    sink_kwargs = {
-        'filepath' : '/Users/henryzou1/Documents/python/Python3/Project/mentoring/data_pipelines_2/data_pipeline2/data_pipelines/data/output/output_data.txt',
-        'file_permission' : 'w',
-    }
-
-    sink_conn = TextConn(**sink_kwargs)
-
-    with source_conn, sink_conn:
-        data = source_conn.get_data()
-        sink_conn.load_data(data)
-
