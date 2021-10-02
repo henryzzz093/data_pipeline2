@@ -76,6 +76,23 @@ class BaseConn(ABC):
 
 
 class FileConn(BaseConn):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        try:
+            self.filepath = kwargs.pop('filepath')
+        except KeyError as err:
+            self.log.warning('Filepath must be set!')
+            raise KeyError(err)
+
+        try:
+            self.file_permission = kwargs.pop('file_permission')
+        except KeyError as err:
+            self.log.warning('File_permission must be set!')
+            raise KeyError(err)
+        
+        if self.file_permission not in ('r', 'w'):
+            raise Exception('file_permission kwargs can only be "w" or "r"')
+
     def connect(self):
         """
         Establishes connection to file
@@ -103,20 +120,6 @@ class CSVConn(FileConn):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        try:
-            self.filepath = kwargs.pop('filepath')
-        except KeyError as err:
-            self.log.warning('Filepath must be set!')
-            raise KeyError(err)
-
-        try:
-            self.file_permission = kwargs.pop('file_permission')
-        except KeyError as err:
-            self.log.warning('File_permission must be set!')
-            raise KeyError(err)
-        
-        if self.file_permission not in ('r', 'w'):
-            raise Exception('file_permission kwargs can only be "w" or "r"')
 
         if self.file_permission == 'w':
             self.write_header = True # if it is 'w', we only write the header once.
@@ -152,31 +155,11 @@ class TextConn(FileConn):
     3. load data to text files
     """
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.date = kwargs.get("date")  # for logger info in Airflow, not the file itself.
-        self.is_source = kwargs.get(   # check kwargs is true, then we set the file_type to read, otherwise set to True
-            "is_source" 
-        )  # store the is_source, or set default to True
-
-        if self.is_source:  # if is_source == True
-            self.file_type = "r"  # read
-            file_dir = "input"
-            filename = "raw_data"
-        else:
-            self.file_type = "w"  # noqa:E501 append if file exist it will just append, write function will overwrite the file if the file does exist.
-            file_dir = "output"
-            filename = "output_data"
-
-        self.filepath = dirname(abspath(__file__)).replace(
-            "connections", f"data/{file_dir}/{filename}.txt"
-        )
-
     def get_data(self):
         """
         Contains logic to retrieve data from csv file
         """
-        self.log.info(f"Retrieving data for: {self.date}")
+        self.log.info(f"Retrieving data from: {self.filepath}")
         for line in self.conn.readlines():  # file.readlines() return each lines from the file
             yield line
 
@@ -371,4 +354,23 @@ class MySQLConn(DBConn):
                     self.conn.commit()
 
 
+
+if __name__ == '__main__':
+    source_kwargs = {
+        'filepath' : '/Users/henryzou1/Documents/python/Python3/Project/mentoring/data_pipelines_2/data_pipeline2/data_pipelines/data/input/raw_data.txt',
+        'file_permission' : 'r',
+    }
+
+    source_conn = TextConn(**source_kwargs)
+    
+    sink_kwargs = {
+        'filepath' : '/Users/henryzou1/Documents/python/Python3/Project/mentoring/data_pipelines_2/data_pipeline2/data_pipelines/data/output/output_data.txt',
+        'file_permission' : 'w',
+    }
+
+    sink_conn = TextConn(**sink_kwargs)
+
+    with source_conn, sink_conn:
+        data = source_conn.get_data()
+        sink_conn.load_data(data)
 

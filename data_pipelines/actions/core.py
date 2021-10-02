@@ -111,18 +111,10 @@ class TextToText(SourceToSink):
         """
         Turn all the data to uppercase
         """
-        return data.upper()
+        for line in data:
+            line = line.upper()
+            yield line
 
-    def run(self):
-        """
-        The core function that is executed by the airflow operator class.
-        """
-        with self.source, self.sink:
-            for line in self.source.get_data():
-                line = self.transform_data(line)
-                self.log.info(str(line))
-                self.load_data(line)
-            self.log.info("Data Load Success!")
 
 
 class CSVToJsonl(SourceToSink):
@@ -233,3 +225,23 @@ class CSVTOMySQL(SourceToSink):
 
 
 
+if __name__ == '__main__':
+    source_kwargs = {
+        'filepath' : '/Users/henryzou1/Documents/python/Python3/Project/mentoring/data_pipelines_2/data_pipeline2/data_pipelines/data/input/raw_data.txt',
+        'file_permission' : 'r',
+    }
+
+    source_conn = TextConn(**source_kwargs)
+    
+    sink_kwargs = {
+        'filepath' : '/Users/henryzou1/Documents/python/Python3/Project/mentoring/data_pipelines_2/data_pipeline2/data_pipelines/data/output/output_data.txt',
+        'file_permission' : 'w',
+    }
+
+    kwargs = {
+        'source_kwargs': source_kwargs,
+        'sink_kwargs': sink_kwargs, 
+    }
+
+    action_class = TextToText(**kwargs)
+    action_class.run()
