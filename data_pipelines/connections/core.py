@@ -78,6 +78,7 @@ class BaseConn(ABC):
 class FileConn(BaseConn):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        self.kwargs = kwargs
         try:
             self.filepath = kwargs.pop('filepath')
         except KeyError as err:
@@ -169,6 +170,16 @@ class TextConn(FileConn):
         self.log.info(f"Writing data to: {self.filepath}")
         for line in data:
             self.conn.write(line)
+
+class JsonConn(FileConn):
+    def get_data(self):
+        self.log.info('f"Retrieving data from: {self.filepath}')
+        yield json.load(self.conn)
+
+    def load_data(self,data):
+        self.log.info(f"Writing data to: {self.filepath}")
+        for item in data:
+            json.dump(item, self.conn, indent = 4)
 
 
 class JsonlConn(FileConn):

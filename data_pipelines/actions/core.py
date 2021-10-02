@@ -9,6 +9,7 @@ from jinja2 import Environment, PackageLoader
 
 from data_pipelines.connections.core import (
     CSVConn,
+    JsonConn,
     JsonlConn,
     PostgresConn,
     TextConn,
@@ -115,6 +116,13 @@ class TextToText(SourceToSink):
             line = line.upper()
             yield line
 
+class JsonToJson(SourceToSink):
+
+    
+    source_class = JsonConn
+    sink_class = JsonConn
+
+    
 
 
 class CSVToJsonl(SourceToSink):
