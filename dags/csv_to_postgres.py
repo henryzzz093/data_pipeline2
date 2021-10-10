@@ -1,5 +1,5 @@
 import datetime
-import pandas
+
 import os
 
 import airflow
