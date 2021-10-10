@@ -14,10 +14,11 @@ setup(
         "isort",
         "interrogate",
         "jinja2",
+        "mysql-connector-python",
+        "poetry",
         "pre-commit",
         "psycopg2-binary",
-        "requests",
         "python-dotenv",
-        "mysql-connector-python",
+        "requests",
     ],
 )

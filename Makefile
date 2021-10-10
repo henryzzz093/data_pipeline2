@@ -12,7 +12,9 @@ install:
 	\
 	source venv/bin/activate; \
 	pip install --upgrade pip; \
-	pip install -e .\
+	pip install -e .;\
+	poetry install; \
+	poetry run pre-commit install; \
 
 reset:
 	@rm -rf venv;
