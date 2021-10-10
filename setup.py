@@ -18,6 +18,6 @@ setup(
         "psycopg2-binary",
         "requests",
         "python-dotenv",
-        "mysql-connector-python"
+        "mysql-connector-python",
     ],
 )

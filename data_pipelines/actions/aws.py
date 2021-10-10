@@ -1,9 +1,9 @@
-import os
 # from dotenv import load_dotenv
 from airflow.exceptions import AirflowSkipException
 from data_pipelines.connections.core import CSVConn
 from data_pipelines.connections.aws import S3Conn
 from data_pipelines.actions.core import SourceToSink
+
 
 class CSVToS3(SourceToSink):
     source_class = CSVConn
@@ -17,9 +17,9 @@ class CSVToS3(SourceToSink):
             if data:
                 with self.sink:
                     self.load_data(data)
-                self.log.info('Data Successfully Loaded!')
+                self.log.info("Data Successfully Loaded!")
             else:
-                raise AirflowSkipException('No Data Found on that date !')
+                raise AirflowSkipException("No Data Found on that date !")
 
 
 # if __name__ == '__main__':
@@ -44,4 +44,3 @@ class CSVToS3(SourceToSink):
 #     action_class = CSVToS3(**kwargs)
 #     action_class.run()
 #     print('success !')
-

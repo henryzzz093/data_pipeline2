@@ -4,7 +4,7 @@ import os
 
 import airflow
 
-from data_pipelines.actions.core import CSVTOMySQL
+from data_pipelines.actions.core import CSVToPostgres
 
 from data_pipelines.airflow.operator import ActionOperator
 
@@ -13,7 +13,7 @@ data_dir = os.path.dirname(os.path.abspath(__file__)).replace(
 )
 
 dag = airflow.DAG(
-    dag_id="pipeline.csv_to_mysql",
+    dag_id="pipeline.csv_to_postgres",
     start_date=datetime.datetime(2021, 10, 1),
     schedule_interval="@once",
 )
@@ -26,10 +26,10 @@ with dag:
 
     sink_kwargs = {
         "host": "host.docker.internal",
-        "port": "3307",
-        "username": os.getenv("MYSQL_USERNAME"),
-        "password": os.getenv("MYSQL_PASSWORD"),
-        "database": os.getenv("MYSQL_DATABASE"),
+        "port": "5438",
+        "username": os.getenv("PG_USERNAME"),
+        "password": os.getenv("PG_PASSWORD"),
+        "database": os.getenv("PG_DATABASE"),
         "schema": "henry",
         "table": "stocks",
     }
@@ -40,6 +40,8 @@ with dag:
         "sink_kwargs": sink_kwargs,
     }
 
-    run_pipeline = ActionOperator(action_class=CSVTOMySQL, dag=dag, **kwargs)
+    run_pipeline = ActionOperator(
+        action_class=CSVToPostgres, dag=dag, **kwargs
+    )
 
     run_pipeline
