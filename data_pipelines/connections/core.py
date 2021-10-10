@@ -253,9 +253,38 @@ class DBConn(BaseConn):
         """
         self.conn.close()
 
-    @abstractmethod
     def get_data_full(self):
         pass
+
+    def get_data(self):
+        pass
+
+    def load_data(self, data):
+        """
+        1. setup connection to the cursor
+        2. extract column name and row values from the dictionary file # noqa:E501
+        3. Insert into the table by using cursor execute SQL statement
+        """
+        with self.conn.cursor() as cursor:
+            for row in data:
+                try:
+                    columns = ", ".join(
+                        row.keys()
+                    )  # extract column names from dictionary
+                    values = list(row.values())
+                    values_template = str(
+                        tuple("%s" for val in values)
+                    ).replace(
+                        "'", ""
+                    )  # create a placeholder value template
+                    sqlstatement = f"INSERT INTO {self.schema}.{self.table} ({columns}) VALUES {values_template}"  # noqa:E501
+                    cursor.execute(sqlstatement, values)
+                    self.conn.commit()
+
+                except (mysql.IntegrityError, psycopg2.IntegrityError) as err:
+                    self.log.warning("Duplicate Found! {row}")
+                    self.log.warning(err)
+                    self.conn.commit()
 
 
 class PostgresConn(DBConn):
@@ -285,39 +314,6 @@ class PostgresConn(DBConn):
             database=self.database,
         )  # using psycopg2 to create a connection to the database
 
-    def get_data(self):
-        pass
-
-    def get_data_full(self):
-        pass
-
-    def load_data(self, data):
-        """
-        1. setup connection to the cursor
-        2. extract column name and row values from the dictionary file
-        3. Insert into the table by using cursor execute SQL statement
-        """
-        with self.conn.cursor() as cursor:  # setup conn to the cursor
-            for row in data:
-                try:
-                    columns = ", ".join(
-                        row.keys()
-                    )  # extract column names from dictionary
-                    values = list(row.values())
-                    values_template = str(
-                        tuple("%s" for val in values)
-                    ).replace(
-                        "'", ""
-                    )  # create a placeholder value template
-                    sqlstatement = f"INSERT INTO {self.schema}.{self.table} ({columns}) VALUES {values_template}"  # noqa:E501
-                    cursor.execute(sqlstatement, values)
-                    self.conn.commit()
-
-                except psycopg2.IntegrityError as err:  # noqa:E501 if we got the integiry error, we catch it and push a warning to the user.
-                    self.log.warning(f"Duplicate Found! {row}")
-                    self.log.warning(err)
-                    self.conn.commit()
-
 
 class MySQLConn(DBConn):
     """
@@ -343,36 +339,3 @@ class MySQLConn(DBConn):
             password=self.password,
             database=self.database,
         )
-
-    def get_data(self):
-        pass
-
-    def get_data_full(self):
-        pass
-
-    def load_data(self, data):
-        """
-        1. setup connection to the cursor
-        2. extract column name and row values from the dictionary file # noqa:E501
-        3. Insert into the table by using cursor execute SQL statement
-        """
-        with self.conn.cursor() as cursor:
-            for row in data:
-                try:
-                    columns = ", ".join(
-                        row.keys()
-                    )  # extract column names from dictionary
-                    values = list(row.values())
-                    values_template = str(
-                        tuple("%s" for val in values)
-                    ).replace(
-                        "'", ""
-                    )  # create a placeholder value template
-                    sqlstatement = f"INSERT INTO {self.schema}.{self.table} ({columns}) VALUES {values_template}"  # noqa:E501
-                    cursor.execute(sqlstatement, values)
-                    self.conn.commit()
-
-                except mysql.IntegrityError as err:
-                    self.log.warning("Duplicate Found! {row}")
-                    self.log.warning(err)
-                    self.conn.commit()
