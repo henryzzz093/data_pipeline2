@@ -16,9 +16,16 @@ install:
 	poetry install; \
 	poetry run pre-commit install; \
 
+run-app:
+	make install; \
+	docker-compose up -d; \
+
 reset:
 	@rm -rf venv;
-	@echo "venv folder deleted"
+	@docker-compose down;
+	@docker-compose rm -f;
+	@docker image prune -af;
+	
 
 up:
 	@docker-compose up;
