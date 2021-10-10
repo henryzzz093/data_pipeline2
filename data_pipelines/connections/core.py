@@ -1,18 +1,20 @@
 import csv
 import json
 import logging
-import os
 from abc import ABC, abstractmethod
 from os.path import abspath, dirname
 
 import psycopg2
 import mysql.connector as mysql
 
+
 logging.basicConfig()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
+
 class BaseConn(ABC):
+
     """
     Based connection class that should be inherited.
     """
@@ -79,18 +81,18 @@ class FileConn(BaseConn):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         try:
-            self.filepath = kwargs.pop('filepath')
+            self.filepath = kwargs.pop("filepath")
         except KeyError as err:
-            self.log.warning('filepath kwargs must be set!')
+            self.log.warning("filepath kwargs must be set!")
             raise KeyError(err)
 
         try:
-            self.file_permission = kwargs.pop('file_permission')
+            self.file_permission = kwargs.pop("file_permission")
         except KeyError as err:
-            self.log.warning('file_permission kwargs must be set!')
+            self.log.warning("file_permission kwargs must be set!")
             raise KeyError(err)
-        
-        if self.file_permission not in ('r', 'w'):
+
+        if self.file_permission not in ("r", "w"):
             raise Exception('file_permission kwargs can only be "w" or "r"')
 
     def connect(self):
@@ -121,8 +123,10 @@ class CSVConn(FileConn):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        if self.file_permission == 'w':
-            self.write_header = True # if it is 'w', we only write the header once.
+        if self.file_permission == "w":
+            self.write_header = (
+                True  # if it is 'w', we only write the header once.
+            )
 
     def get_data(self):
         """
@@ -140,7 +144,7 @@ class CSVConn(FileConn):
         self.log.info(f"Writing data to: {self.filepath}")
         for row in data:
             writer = csv.DictWriter(self.conn, fieldnames=row.keys())
-            if self.write_header: # allow us to write the header only once
+            if self.write_header:  # allow us to write the header only once
                 writer.writeheader()
                 self.write_header = False
             writer.writerow(row)
@@ -159,10 +163,14 @@ class TextConn(FileConn):
         Contains logic to retrieve data from csv file
         """
         self.log.info(f"Retrieving data from: {self.filepath}")
-        for line in self.conn.readlines():  # file.readlines() return each lines from the file
+        for (
+            line
+        ) in (
+            self.conn.readlines()
+        ):  # file.readlines() return each lines from the file
             yield line
 
-    def load_data(self, data, *args, **kwargs): 
+    def load_data(self, data, *args, **kwargs):
         """
         Contains logic to write data to text file.
         """
@@ -170,15 +178,16 @@ class TextConn(FileConn):
         for line in data:
             self.conn.write(line)
 
+
 class JsonConn(FileConn):
     def get_data(self):
         self.log.info('f"Retrieving data from: {self.filepath}')
         yield json.load(self.conn)
 
-    def load_data(self,data):
+    def load_data(self, data):
         self.log.info(f"Writing data to: {self.filepath}")
         for item in data:
-            json.dump(item, self.conn, indent = 4)
+            json.dump(item, self.conn, indent=4)
 
 
 class JsonlConn(FileConn):
@@ -198,7 +207,7 @@ class JsonlConn(FileConn):
             file_dir = "input"
             filename = "raw_data"
 
-        else:               # if it is not set to True, we assume it is sink conn
+        else:  # if it is not set to True, we assume it is sink conn
             self.file_type = "a"
             file_dir = "output"
             filename = "output_data"
@@ -221,13 +230,13 @@ class DBConn(BaseConn):
     """
     Database Connection class used to :
     1. establish connection to Rational Database Management System (RDBMS)
-    2. get data from RDBMS 
+    2. get data from RDBMS
     3. load data to RDBMS
     """
 
     def __init__(self, **kwargs):
         """
-        Constructing the connection by using the following keywords arguments        
+        Constructing the connection by using the following keywords arguments
         """
         super().__init__(**kwargs)
         self.host = kwargs.get("host", "host.docker.internal")
@@ -260,7 +269,9 @@ class PostgresConn(DBConn):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        self.port = kwargs.get("port", "5432") # check to see if the port values exist, if it is not, we set the default port to 5432
+        self.port = kwargs.get(
+            "port", "5432"
+        )  # noqa:E501 check to see if the port values exist, if it is not, we set the default port to 5432
 
     def connect(self):
         """
@@ -272,7 +283,7 @@ class PostgresConn(DBConn):
             user=self.username,
             password=self.password,
             database=self.database,
-        ) # using psycopg2 to create a connection to the database
+        )  # using psycopg2 to create a connection to the database
 
     def get_data(self):
         pass
@@ -289,17 +300,24 @@ class PostgresConn(DBConn):
         with self.conn.cursor() as cursor:  # setup conn to the cursor
             for row in data:
                 try:
-                    columns = ', '.join(row.keys()) # extract column names from dictionary
+                    columns = ", ".join(
+                        row.keys()
+                    )  # extract column names from dictionary
                     values = list(row.values())
-                    values_template = str(tuple('%s' for val in values)).replace("'", "") # create a placeholder value template
-                    sqlstatement = f'INSERT INTO {self.schema}.{self.table} ({columns}) VALUES {values_template}'
+                    values_template = str(
+                        tuple("%s" for val in values)
+                    ).replace(
+                        "'", ""
+                    )  # create a placeholder value template
+                    sqlstatement = f"INSERT INTO {self.schema}.{self.table} ({columns}) VALUES {values_template}"  # noqa:E501
                     cursor.execute(sqlstatement, values)
                     self.conn.commit()
 
-                except psycopg2.IntegrityError as err: # if we got the integiry error, we catch it and push a warning to the user.
+                except psycopg2.IntegrityError as err:  # noqa:E501 if we got the integiry error, we catch it and push a warning to the user.
                     self.log.warning(f"Duplicate Found! {row}")
                     self.log.warning(err)
                     self.conn.commit()
+
 
 class MySQLConn(DBConn):
     """
@@ -308,35 +326,25 @@ class MySQLConn(DBConn):
     2. get data from MySQL
     3. load data to MySQL
     """
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        self.port = kwargs.get('port', '3306')
+        self.port = kwargs.get("port", "3306")
 
     def connect(self):
-        '''
+        """
         To test if we connected to the database
-        '''
+        """
         self.conn = mysql.connect(
-            host = self.host,
-            port = self.port,
-            user = self.username,
-            password = self.password,
-            database = self.database,
+            host=self.host,
+            port=self.port,
+            user=self.username,
+            password=self.password,
+            database=self.database,
         )
 
-        # mysql_cur = self.conn.cursor(prepared = True)
-        # try:
-        #     mysql_cur.execute("SHOW VARIABLES WHERE variable_name = 'version'")
-        #     result = mysql_cur.fetchone()[1]
-        #     print(f'MySQL DB CONNECTED, CURRENT DB VERSION IS: {result}')
-        #     self.log.info(f'MySQL DB CONNECTED, CURRENT DB VERSION IS: {result}')
-        # except mysql.IntegrityError as err:
-        #     print(f'unable to connect to db, mysql error: {err}')
-        #     self.log.info(f'unable to connect to db, mysql error: {err}')
-        #     exit(1)
-
-    def get_data(self): 
+    def get_data(self):
         pass
 
     def get_data_full(self):
@@ -345,23 +353,26 @@ class MySQLConn(DBConn):
     def load_data(self, data):
         """
         1. setup connection to the cursor
-        2. extract column name and row values from the dictionary file
+        2. extract column name and row values from the dictionary file # noqa:E501
         3. Insert into the table by using cursor execute SQL statement
         """
         with self.conn.cursor() as cursor:
             for row in data:
                 try:
-                    columns = ', '.join(row.keys()) # extract column names from dictionary
+                    columns = ", ".join(
+                        row.keys()
+                    )  # extract column names from dictionary
                     values = list(row.values())
-                    values_template = str(tuple('%s' for val in values)).replace("'", "") # create a placeholder value template
-                    sqlstatement = f'INSERT INTO {self.schema}.{self.table} ({columns}) VALUES {values_template}'
+                    values_template = str(
+                        tuple("%s" for val in values)
+                    ).replace(
+                        "'", ""
+                    )  # create a placeholder value template
+                    sqlstatement = f"INSERT INTO {self.schema}.{self.table} ({columns}) VALUES {values_template}"  # noqa:E501
                     cursor.execute(sqlstatement, values)
                     self.conn.commit()
 
                 except mysql.IntegrityError as err:
-                    self.log.warning('Duplicate Found! {row}')
+                    self.log.warning("Duplicate Found! {row}")
                     self.log.warning(err)
                     self.conn.commit()
-
-
-
