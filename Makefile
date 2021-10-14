@@ -7,14 +7,24 @@ format:
 	@python -m black dags data_pipelines
 	@python -m flake8 dags data_pipelines
 
+.ONESHELL:
 install:
+	@rm -rf venv;
 	@python -m venv venv;
-	\
-	source venv/bin/activate; \
-	pip install --upgrade pip; \
-	pip install -e .;\
-	poetry install; \
-	poetry run pre-commit install; \
+	@tput setaf 2;
+	@echo "Activating virtual environment";
+	@tput sgr0;
+	@source venv/bin/activate;
+	@tput setaf 2;
+	@echo "Installing packages";
+	@tput sgr0;
+	@pip install --upgrade pip;
+	@pip install -e .;
+	@poetry install;
+	@poetry run pre-commit install;
+	@tput setaf 2;
+	@echo "Installation complete! :)";
+	@tput sgr0;
 
 run-app:
 	make install; \
@@ -25,6 +35,9 @@ reset:
 	@docker-compose down;
 	@docker-compose rm -f;
 	@docker image prune -af;
+
+update:
+	@export PATH="/usr/local/opt/make/libexec/gnubin:$PATH"
 	
 
 up:
