@@ -26,8 +26,15 @@ install:
 	@tput sgr0;
 
 run-app:
-	make install; \
-	docker-compose up -d; \
+	@tput setaf 2;
+	@echo installing application;
+	@tput sgr0;
+	@make install; 
+	@tput setaf 2;
+	@echo application successfully installed!
+	@echo launching application!
+	@tput sgr0;
+	@docker-compose up -d; 
 
 
 
@@ -35,10 +42,13 @@ reset:
 	@rm -rf venv;
 	@docker-compose down;
 	@docker-compose rm -f;
+<<<<<<< HEAD
 	@docker image prune -af;
 
 update:
 	@export PATH="/usr/local/opt/make/libexec/gnubin:$PATH"
+=======
+>>>>>>> 70bc09e76e06b94fc4c163d00737308ee06a7c6d
 	
 
 up:
