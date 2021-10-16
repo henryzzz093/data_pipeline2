@@ -42,7 +42,7 @@ description = ""
 authors = ["Henry"]
 
 [tool.poetry.dependencies]
-python = "3.7.4"
+python = "3.6.13"
 apache-airflow = "2.2.*"
 mysql-connector-python = "8.0.*"
 psycopg2-binary = "2.9.*"
