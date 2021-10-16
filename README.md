@@ -34,7 +34,6 @@ The goal for this project to demostrate the process of ETL by using Python and D
 ## Built With
 Some major frameworks/libraries used to bootstrap this project:
 * [apache-airflow](https://github.com/apache/airflow)
-* [jinja2](https://jinja.palletsprojects.com/en/3.0.x/)
 * [mysql-connector-python](https://dev.mysql.com/doc/connector-python/en/)
 * [psycopg2-binary](https://pypi.org/project/psycopg2-binary/)
 
