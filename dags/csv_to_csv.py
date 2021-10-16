@@ -25,7 +25,7 @@ with dag:
     }
 
     sink_kwargs = {
-        "filepath": data_dir + "/output/output_data2.csv",
+        "filepath": data_dir + "/output/output_data.csv",
         "file_permission": "w",
     }
 
