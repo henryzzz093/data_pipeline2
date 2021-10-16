@@ -78,7 +78,19 @@ Data Pipeline Demostration
 
 ## HOW TO
 
+### How to verify the Airflow is running
+```bash
+docker ps
+```
+![](images/docker_ps.png)
+
 ### How to verify the MySQL table is created
+```bash
+docker exec -it ms_container bash
+```
+![](images/inside_MySQL.png)
+
+before Triger the Dag:
 
 ### How to verify the Postgres table is created
 
