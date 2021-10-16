@@ -75,12 +75,17 @@ make reset
 
 ## Usage
 Data Pipeline Demostration
-## Contributing
+
+## HOW TO
+
+### How to verify the MySQL table is created
+
+### How to verify the Postgres table is created
+
 
 ## License
 
 ## Contact
 
-## Acknowledgments
 
 
