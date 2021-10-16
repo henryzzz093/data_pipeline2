@@ -9,17 +9,16 @@ format:
 
 .ONESHELL:
 install:
-	@rm -rf venv;
-	@python -m venv venv;
+	@rm -rf .venv;
+	@python -m venv .venv;
 	@tput setaf 2;
 	@echo "Activating virtual environment";
 	@tput sgr0;
-	@source venv/bin/activate;
+	@poetry shell;
+	@pip install --upgrade pip;
 	@tput setaf 2;
 	@echo "Installing packages";
 	@tput sgr0;
-	@pip install --upgrade pip;
-	@pip install -e .;
 	@poetry install;
 	@poetry run pre-commit install;
 	@tput setaf 2;
