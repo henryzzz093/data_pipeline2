@@ -45,13 +45,6 @@ reset:
 	@rm -rf .venv;
 	@docker-compose down;
 	@docker-compose rm -f;
-<<<<<<< HEAD
-	@docker image prune -af;
-
-update:
-	@export PATH="/usr/local/opt/make/libexec/gnubin:$PATH"
-=======
->>>>>>> 70bc09e76e06b94fc4c163d00737308ee06a7c6d
 	
 
 up:
