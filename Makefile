@@ -26,8 +26,15 @@ install:
 	@tput sgr0;
 
 run-app:
-	make install; \
-	docker-compose up -d; \
+	@tput setaf 2;
+	@echo installing application;
+	@tput sgr0;
+	@make install; 
+	@tput setaf 2;
+	@echo application successfully installed!
+	@echo launching application!
+	@tput sgr0;
+	@docker-compose up -d; 
 
 
 
@@ -35,7 +42,6 @@ reset:
 	@rm -rf venv;
 	@docker-compose down;
 	@docker-compose rm -f;
-	@docker image prune -af;
 	
 
 up:
