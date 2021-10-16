@@ -24,7 +24,7 @@ install:
 	@echo "Installation complete! :)";
 	@tput sgr0;
 
-run-app:
+run-app-dev:
 	@tput setaf 2;
 	@echo "Initializing environment";
 	@tput sgr0;
@@ -39,6 +39,11 @@ run-app:
 	@tput sgr0;
 	@docker-compose up -d; 
 
+run-app:
+	@tput setaf 2;
+	@echo Launching application!
+	@tput sgr0;
+	@docker-compose up;
 
 
 reset:
