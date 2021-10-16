@@ -30,6 +30,8 @@ run-app:
 	make install; \
 	docker-compose up -d; \
 
+
+
 reset:
 	@rm -rf venv;
 	@docker-compose down;
