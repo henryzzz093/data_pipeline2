@@ -25,7 +25,7 @@ with dag:
     }
 
     sink_kwargs = {
-        "filepath": data_dir + "/output/output_data2.json",
+        "filepath": data_dir + "/output/output_data.json",
         "file_permission": "w",
     }
 
