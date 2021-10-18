@@ -132,7 +132,8 @@ class CSVConn(FileConn):
         """
         Contains logic to retrieve data from csv file.
         """
-        self.log.info(f"Retrieving data from: {self.filepath}")
+        log_message = f"Retrieving data from: {self.filepath}"
+        self.log.info(log_message)
         reader = csv.DictReader(self.conn)
         for row in reader:
             yield row
