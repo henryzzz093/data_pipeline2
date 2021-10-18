@@ -16,10 +16,9 @@
       </ul>
     </li>
     <li><a href="#usage">Usage</a></li>
-    <li><a href="#contributing">Contributing</a></li>
+    <li><a href="#howto">HowTo</a></li>
     <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
-    <li><a href="#acknowledgments">Acknowledgments</a></li>
   </ol>
 </details>
 
@@ -27,6 +26,7 @@
 
 <!-- About The Project -->
 ## About The Project
+![](images/Airflow.png)
 
 The goal for this project to demostrate the process of ETL by using Python and Docker containers. 
 
@@ -73,31 +73,64 @@ it would install every packages for you as well as creating a Apache Airflow UI 
 make reset
 ```
 
+<!-- Usage -->
 ## Usage
 Data Pipeline Demostration
 
-## HOW TO
+<!-- HowTo -->
+## HowTo
 
-### How to verify the Airflow is running
+### 1. How to verify the Airflow is running
 ```bash
 docker ps
 ```
 ![](images/docker_ps.png)
 
-### How to verify the MySQL table is created
+### 2. How to verify the MySQL table is created
 ```bash
 docker exec -it ms_container bash
 ```
+and then connected to the MySQL inside the container by using the following:
+- host = host.docker.internal
+- port = 3307
+- user = henry
+- passcode = henry
+- table name = stocks
+
 ![](images/inside_MySQL.png)
+here we can see before tirggering the MySQL dag, the table is empty.
+![](images/Empty_MySQL_table.png)
 
-before Triger the Dag:
+After triggering the dag:
+![](images/stock_table_mysql.png)
 
-### How to verify the Postgres table is created
+## 3. How to verify the Postgres table is created
+```bash
+docker exec -it pg_container bash
+```
+and then connected to the MySQL inside the container by using the following:
+- host = host.docker.internal
+- port = 5438
+- user = henry
+- passcode = henry
+- table name = stocks
 
+![](images/inside_Postgres.png)
 
+here we can see before tirggering the Postgres dag, the table is empty.
+![](images/Postgres_empty_table.png)
+
+After triggering the dag:
+![](images/stock_table_Postgres.png)
+
+<!--LICENSE -->
 ## License
+Distributed under the MIT License.
 
+<!--Contact-->
 ## Contact
-
+- Henry Zou - heyunzou@magil.com
+- Domonique Gordon - 
+<p align = "right">(<a href = "#top">back to top</a>)</p>
 
 
