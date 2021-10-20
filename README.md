@@ -129,7 +129,7 @@ Distributed under the MIT License.
 
 <!--Contact-->
 ## Contact
-- Henry Zou - heyunzou@magil.com
+- Henry Zou - heyunzou@gmail.com
 - Domonique Gordon - 
 <p align = "right">(<a href = "#top">back to top</a>)</p> 
 
