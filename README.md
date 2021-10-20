@@ -131,6 +131,6 @@ Distributed under the MIT License.
 ## Contact
 - Henry Zou - heyunzou@magil.com
 - Domonique Gordon - 
-<p align = "right">(<a href = "#top">back to top</a>)</p>
+<p align = "right">(<a href = "#top">back to top</a>)</p> 
 
 
