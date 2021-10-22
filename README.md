@@ -62,13 +62,24 @@ export PATH="/usr/local/opt/make/libexec/gnubin:$PATH"
 ```
 
 ### Installation
-1. using the following commend to run the project:
+
+1. using the following commend to run the project without creating a vitural environment:
 ```bash
 make run-app
 ```
 it would install every packages for you as well as creating a Apache Airflow UI to monitor the tasks
 
-2. you can reset everything and wipe out the docker images from your computer by using:
+
+2. For those who would like to run the project under development purpose, type:
+```bash
+make run-app-dev
+``` 
+to go inside the poetry shell, and then <strong> type the following again </strong>:
+```bash
+make run-app-dev 
+``` 
+
+3. you can reset everything and wipe out the docker images from your computer by using:
 ```bash
 make reset
 ```
