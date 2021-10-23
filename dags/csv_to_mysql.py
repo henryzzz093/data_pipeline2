@@ -27,9 +27,9 @@ with dag:
     sink_kwargs = {
         "host": "host.docker.internal",
         "port": "3307",
-        "username": os.getenv("MYSQL_USERNAME"),
-        "password": os.getenv("MYSQL_PASSWORD"),
-        "database": os.getenv("MYSQL_DATABASE"),
+        "username": "henry",
+        "password": "henry",
+        "database": "henry",
         "schema": "henry",
         "table": "stocks",
     }
