@@ -27,9 +27,9 @@ with dag:
     sink_kwargs = {
         "host": "host.docker.internal",
         "port": "5438",
-        "username": os.getenv("PG_USERNAME"),
-        "password": os.getenv("PG_PASSWORD"),
-        "database": os.getenv("PG_DATABASE"),
+        "username": "henry",
+        "password": "henry",
+        "database": "henry",
         "schema": "henry",
         "table": "stocks",
     }
