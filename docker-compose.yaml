@@ -153,9 +153,9 @@ services:
     image: postgres:13
     restart: always
     environment: 
-      POSTGRES_USER: ${PG_USERNAME}
-      POSTGRES_PASSWORD: ${PG_PASSWORD}
-      POSTGRES_DATABASE: ${PG_DATABASE}
+      POSTGRES_USER: henry
+      POSTGRES_PASSWORD: henry
+      POSTGRES_DATABASE: henry
     ports:
       - "5438:5432"
     volumes:
@@ -167,10 +167,10 @@ services:
     image: mysql
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD}
-      MYSQL_USER: ${MYSQL_USERNAME}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_ROOT_PASSWORD: henry
+      MYSQL_USER: henry
+      MYSQL_PASSWORD: henry
+      MYSQL_DATABASE: henry
     ports:
       - "3307:3306"
     volumes:
