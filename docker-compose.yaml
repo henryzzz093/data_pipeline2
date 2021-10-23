@@ -75,6 +75,8 @@ services:
       POSTGRES_USER: airflow
       POSTGRES_PASSWORD: airflow
       POSTGRES_DB: airflow
+    volumes:
+      - postgres-db-volume:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "airflow"]
       interval: 5s
@@ -175,4 +177,7 @@ services:
       - "3307:3306"
     volumes:
       - ./sql/mysql/create_table.sql:/docker-entrypoint-initdb.d/create_table.sql
+
+volumes:
+  postgres-db-volume:
 
