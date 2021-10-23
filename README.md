@@ -28,14 +28,15 @@
 ## About The Project
 ![](images/Airflow.png)
 
-The goal for this project to demostrate the process of ETL by using Python and Docker containers. 
+The goal for this project to demostrate the process of ETL automation using Airflow, Docker containers and Python. 
 
 
 ## Built With
 Some major frameworks/libraries used to bootstrap this project:
-* [apache-airflow](https://github.com/apache/airflow)
-* [mysql-connector-python](https://dev.mysql.com/doc/connector-python/en/)
-* [psycopg2-binary](https://pypi.org/project/psycopg2-binary/)
+* [Apache-airflow](https://github.com/apache/airflow)
+* [Docker](https://docs.docker.com/)
+* [Mysql-connector-python](https://dev.mysql.com/doc/connector-python/en/)
+* [Psycopg2-binary](https://pypi.org/project/psycopg2-binary/)
 
 
 <!-- GETTING STARTED -->
@@ -46,7 +47,11 @@ Some major frameworks/libraries used to bootstrap this project:
 
 2. executing the Docker Desktop and make sure it runs in your background.
 
-3. Make sure your Makefile has the latest version, you can check your current version by typing the following in terminal:
+3. Some minimum memory requirements for Docker:
+![](images/Docker_memory.png)
+
+
+4. Make sure your Makefile has the latest version, you can check your current version by typing the following in terminal:
 ```bash
 make --version
 GNU Make 4.3
@@ -139,9 +144,9 @@ After triggering the dag:
 Distributed under the MIT License.
 
 <!--Contact-->
-## Contact
-- Henry Zou - heyunzou@gmail.com
-- Domonique Gordon - 
+## Maintainer
+- Primary - [Henry Zou](https://github.com/henryzzz093) 
+- Secondary - [Domonique Gordon](https://github.com/DomoniqueGordon)
 <p align = "right">(<a href = "#top">back to top</a>)</p> 
 
 
