@@ -28,7 +28,7 @@
 ## About The Project
 ![](images/Airflow.png)
 
-The goal for this project to demostrate the process of ETL automation using Airflow, Docker containers and Python. 
+The goal for this project is to demnostrate the process of ETL automation using **Airflow**, **Docker Containers** and **Python**. 
 
 
 ## Built With
@@ -43,58 +43,58 @@ Some major frameworks/libraries used to bootstrap this project:
 ## Getting Started
 
 ### Prerequisites
-1. make sure your installed Docker Desktop on your computer. You can use the below link to download Docker from this link [download](https://www.docker.com/products/docker-desktop):
+#### Docker
+Make sure you have Docker Desktop installed on your computer. If you do not have Docker installed please use this link to [download](https://www.docker.com/products/docker-desktop):
 
-2. executing the Docker Desktop and make sure it runs in your background.
+Once Docker is installed, make sure it is up and running in your background.
 
-3. Some minimum memory requirements for Docker:
+Verify that the minimum memory requirements for Docker are set. Use the image below as a reference:
 ![](images/Docker_memory.png)
 
+#### Make
 
-4. Make sure your Makefile has the latest version, you can check your current version by typing the following in terminal:
+Make sure your Makefile is version `4.3` or higher. You can check your current version by typing the following in terminal:\
+`make --version`
 ```bash
 make --version
 GNU Make 4.3
 Copyright (C) 1988-2020 Free Software Foundation, Inc.
 ```
-Or you can upgrade your makefile by using:
+To upgrade `make` use the following command:
 ```bash
 brew install make
 ```
-and then add a "gnubin" directoryto your PATH from your bashrc like:
+Add "gnubin" directory to your PATH in the terminal once the upgrade is complete :
 ```bash
 export PATH="/usr/local/opt/make/libexec/gnubin:$PATH"
 ```
 
-### Installation
 
-1. using the following commend to run the project without creating a vitural environment:
+### Running the Application
+
+1. Use the following command to run the application:
 ```bash
 make run-app
 ```
-it would install every packages for you as well as creating a Apache Airflow UI to monitor the tasks
+
+2. Check that the application is running by going to your [localhost:8080](http://localhost:8080/)
+
+(Please note that application can take anywhere between 1 - 5 minutes to run depending on your particular system)
+
+3. Login to the Airflow Webserver using the following credentials:
+   - username: `airflow` 
+   - password:`airflow`
+
+4. Trigger the DAGs to ensure that they are working properly. 
+
+5. Check the **How To** section for additional instructions.
+
+6. Shut down the application by entering the following command in your terminal:<br>
+` make reset`
 
 
-2. For those who would like to run the project under development purpose, type:
-```bash
-make run-app-dev
-``` 
-to go inside the poetry shell, and then <strong> type the following again </strong>:
-```bash
-make run-app-dev 
-``` 
-
-3. you can reset everything and wipe out the docker images from your computer by using:
-```bash
-make reset
-```
-
-<!-- Usage -->
-## Usage
-Data Pipeline Demostration
-
-<!-- HowTo -->
-## HowTo
+<!-- How To -->
+## How To
 
 ### 1. How to verify the Airflow is running
 ```bash

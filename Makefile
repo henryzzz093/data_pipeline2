@@ -9,7 +9,7 @@ format:
 
 .ONESHELL:
 install:
-	@python -m venv .venv;
+	@python3 -m venv .venv;
 	@tput setaf 2;
 	@echo "Activating virtual environment";
 	@tput sgr0;
@@ -37,7 +37,7 @@ run-app-dev:
 	@echo Application successfully installed!
 	@echo Launching application!
 	@tput sgr0;
-	@docker-compose up -d; 
+	@docker-compose up; 
 
 run-app:
 	@tput setaf 2;
