@@ -86,6 +86,7 @@ make run-app
    - password:`airflow`
 
 4. Trigger the DAGs to ensure that they are working properly. 
+![](images/trigger2.png)
 
 5. Check the **How To** section for additional instructions.
 
