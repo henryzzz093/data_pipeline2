@@ -4,7 +4,7 @@ import os
 
 import airflow
 
-from data_pipelines.actions.core import CSVTOMySQL
+from data_pipelines.actions.core import CSVToMySQL
 
 from data_pipelines.airflow.operator import ActionOperator
 
@@ -40,6 +40,6 @@ with dag:
         "sink_kwargs": sink_kwargs,
     }
 
-    run_pipeline = ActionOperator(action_class=CSVTOMySQL, dag=dag, **kwargs)
+    run_pipeline = ActionOperator(action_class=CSVToMySQL, dag=dag, **kwargs)
 
     run_pipeline
