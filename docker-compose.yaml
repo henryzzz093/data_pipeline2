@@ -161,7 +161,7 @@ services:
     ports:
       - "5438:5432"
     volumes:
-      - ./sql/postgres/create_table.sql:/docker-entrypoint-initdb.d/create_table.sql
+      - ./database/postgres/create_table.sql:/docker-entrypoint-initdb.d/create_table.sql
 
   mysql:
     container_name: ms_container
@@ -175,8 +175,25 @@ services:
       MYSQL_DATABASE: henry
     ports:
       - "3307:3306"
-    volumes:
-      - ./sql/mysql/create_table.sql:/docker-entrypoint-initdb.d/create_table.sql
+    healthcheck:
+      test: mysqladmin ping -h "host.docker.internal" -u henry --password=henry --port 3307
+      interval: 5s
+      retries: 24
+      start_period: 100s
+
+  ms_db_init:
+    build: 
+      dockerfile: database/mysql/ms_db.Dockerfile
+    depends_on: 
+      mysql:
+        condition: service_healthy
+    
+
+
+    
+
+
+
 
 volumes:
   postgres-db-volume:
