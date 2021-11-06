@@ -190,6 +190,15 @@ services:
       mysql:
         condition: service_healthy
   
+  streamlit:
+    container_name: streamlit_henry
+    build:
+      context: .
+      dockerfile: "./streamlit/Dockerfile"
+    ports:
+      - 8501:8501
+    volumes:
+      - ./streamlit/app:/app
 
 volumes:
   postgres-db-volume:
