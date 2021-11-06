@@ -23,7 +23,7 @@ def get_table_status(conn_type):
         get_data(sql, conn_type)
         return "✅"
     except Exception as e:
-        st.write(e)
+        st.wrtie(e)
         return "❌"
 
 
@@ -39,7 +39,7 @@ def get_sample_data(conn_type):
     if len(df) > 0:
         return df
     else:
-        return pd.DateFrame()
+        return pd.DataFrame()
 
 
 with psql_col:
