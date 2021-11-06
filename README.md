@@ -33,10 +33,10 @@ The goal for this project is to demnostrate the process of ETL automation using 
 
 ## Built With
 Some major frameworks/libraries used to bootstrap this project:
-* [Apache-airflow](https://github.com/apache/airflow)
-* [Docker](https://docs.docker.com/)
-* [Mysql-connector-python](https://dev.mysql.com/doc/connector-python/en/)
-* [Psycopg2-binary](https://pypi.org/project/psycopg2-binary/)
+* [Apache-airflow](https://github.com/apache/airflow): Data pipeline Scheduling and orchestration
+* [Docker](https://docs.docker.com/): Isolate application environment inside a container. 
+* [Mysql-connector-python](https://dev.mysql.com/doc/connector-python/en/): Used to establish connection with MySQL database
+* [Psycopg2-binary](https://pypi.org/project/psycopg2-binary/): Used to establish connection with Postgres database
 
 
 <!-- GETTING STARTED -->
@@ -51,39 +51,52 @@ Once Docker is installed, make sure it is up and running in your background.
 Verify that the minimum memory requirements for Docker are set. Use the image below as a reference:
 ![](images/Docker_memory.png)
 
-#### Make
-
-Make sure your Makefile is version `4.3` or higher. You can check your current version by typing the following in terminal:\
-`make --version`
-```bash
-make --version
-GNU Make 4.3
-Copyright (C) 1988-2020 Free Software Foundation, Inc.
-```
-To upgrade `make` use the following command:
-```bash
-brew install make
-```
-Add "gnubin" directory to your PATH in the terminal once the upgrade is complete :
-```bash
-export PATH="/usr/local/opt/make/libexec/gnubin:$PATH"
-```
-
 
 ### Running the Application
+1. Make sure your docker is running with the minimum requirement highlighted above. 
 
-1. Use the following command to run the application:
+2. Ensure that you are in the main directory of the project, and then run the following command in the command line:
 ```bash
 make run-app
 ```
 
-2. Check that the application is running by going to your [localhost:8080](http://localhost:8080/)
+3. Check the table has been created in both MySQL and Postgres Databases by using the following commands:
+
+```bash
+docker ps
+```
+![](images/docker_ps.png)
+
+using the following command to access MySQL inside the container:
+```bash
+docker exec -it ms_container bash
+```
+and then connected to the MySQL inside the container by using the following:
+- host = host.docker.internal
+- port = 3307
+- user = henry
+- passcode = henry
+- table name = stocks
+
+
+
+![](images/inside_MySQL.png)
+here we can see before tirggering the MySQL dag, the table is empty.
+![](images/Empty_MySQL_table.png)
+
+
+
+
+
+
+3. Check that the application is running by going to your [localhost:8080](http://localhost:8080/)
 
 (Please note that application can take anywhere between 1 - 5 minutes to run depending on your particular system)
 
+
 3. Login to the Airflow Webserver using the following credentials:
-   - username: `airflow` 
-   - password:`airflow`
+   - username: `henry` 
+   - password:`henry`
 
 4. Trigger the DAGs to ensure that they are working properly. 
 ![](images/trigger2.png)
@@ -98,25 +111,7 @@ make run-app
 ## How To
 
 ### 1. How to verify the Airflow is running
-```bash
-docker ps
-```
-![](images/docker_ps.png)
 
-### 2. How to verify the MySQL table is created
-```bash
-docker exec -it ms_container bash
-```
-and then connected to the MySQL inside the container by using the following:
-- host = host.docker.internal
-- port = 3307
-- user = henry
-- passcode = henry
-- table name = stocks
-
-![](images/inside_MySQL.png)
-here we can see before tirggering the MySQL dag, the table is empty.
-![](images/Empty_MySQL_table.png)
 
 After triggering the dag:
 ![](images/stock_table_mysql.png)

@@ -47,6 +47,8 @@ x-airflow-common:
   build: .
   environment:
     &airflow-common-env
+    _AIRFLOW_WWW_USER_USERNAME: henry
+    _AIRFLOW_WWW_USER_PASSWORD: henry
     AIRFLOW__CORE__EXECUTOR: CeleryExecutor
     AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
     AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@postgres/airflow
@@ -187,13 +189,7 @@ services:
     depends_on: 
       mysql:
         condition: service_healthy
-    
-
-
-    
-
-
-
+  
 
 volumes:
   postgres-db-volume:
