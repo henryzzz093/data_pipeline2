@@ -38,6 +38,8 @@ def get_sample_data(conn_type):
     df = get_data(sql, conn_type)
     if len(df) > 0:
         return df
+    else:
+        return pd.DateFrame()
 
 
 with psql_col:
@@ -50,7 +52,8 @@ with psql_col:
     st.subheader("Row Counts: {}".format(row_count))
     st.subheader("Sample Data")
     df = get_sample_data(db)
-    st.dataframe(df.sample(10))
+    if len(df) > 0:
+        st.dataframe(df.sample(10))
 
 
 with mysql_col:
@@ -63,4 +66,5 @@ with mysql_col:
     st.subheader("Row Counts: {}".format(row_count))
     st.subheader("Sample Data")
     df = get_sample_data(db)
-    st.dataframe(df.sample(10))
+    if len(df) > 0:
+        st.dataframe(df.sample(10))

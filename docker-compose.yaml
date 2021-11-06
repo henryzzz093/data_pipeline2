@@ -185,7 +185,8 @@ services:
 
   ms_db_init:
     build: 
-      dockerfile: database/mysql/ms_db.Dockerfile
+      context: .
+      dockerfile: ./database/mysql/ms_db.Dockerfile
     depends_on: 
       mysql:
         condition: service_healthy
@@ -194,7 +195,7 @@ services:
     container_name: streamlit_henry
     build:
       context: .
-      dockerfile: "./streamlit/Dockerfile"
+      dockerfile: ./streamlit/Dockerfile
     ports:
       - 8501:8501
     volumes:
