@@ -201,6 +201,18 @@ services:
     volumes:
       - ./streamlit/app:/app
 
+  fake_data_api:
+    container_name: fake_data_api
+    build:
+      context: .
+      dockerfile: ./fake_data_api/Dockerfile
+    ports:
+      - 5000:5000
+    volumes:
+      - ./fake_data_api/api:/api
+
+
+
 volumes:
   postgres-db-volume:
 
