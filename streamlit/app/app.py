@@ -1,9 +1,14 @@
 import streamlit as st
 from sqlalchemy import create_engine
 import pandas as pd
+from utils import get_image
+
+st.set_page_config(layout="wide")
 
 
 psql_col, mysql_col = st.columns(2)
+mysql_logo = get_image("./images/MySQL-Logo.png")
+psql_logo = get_image("./images/PostgresLogo.png")
 
 
 def get_data(sql, conn_type):
@@ -23,7 +28,7 @@ def get_table_status(conn_type):
         get_data(sql, conn_type)
         return "✅"
     except Exception as e:
-        st.wrtie(e)
+        st.write(e)
         return "❌"
 
 
@@ -42,9 +47,8 @@ def get_sample_data(conn_type):
         return pd.DataFrame()
 
 
-with psql_col:
-    db = "psql"
-    st.header(db.upper())
+def get_table(db):
+    result = pd.DataFrame()
     st.markdown("***")
     status = get_table_status(db)
     row_count = get_row_counts(db)
@@ -53,18 +57,18 @@ with psql_col:
     st.subheader("Sample Data")
     df = get_sample_data(db)
     if len(df) > 0:
-        st.dataframe(df.sample(10))
+        result = st.table(df.sample(10).round())
+    return result
 
+
+with psql_col:
+    db = "psql"
+    st.header(db.upper())
+    st.image(psql_logo)
+    get_table(db)
 
 with mysql_col:
     db = "mysql"
     st.header(db.upper())
-    st.markdown("***")
-    status = get_table_status(db)
-    row_count = get_row_counts(db)
-    st.subheader("Table Status: {}".format(status))
-    st.subheader("Row Counts: {}".format(row_count))
-    st.subheader("Sample Data")
-    df = get_sample_data(db)
-    if len(df) > 0:
-        st.dataframe(df.sample(10))
+    st.image(mysql_logo)
+    get_table(db)
