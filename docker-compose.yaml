@@ -190,6 +190,9 @@ services:
     depends_on: 
       mysql:
         condition: service_healthy
+    command: python3 create_table.py
+    volumes:
+      - ./database/mysql/scripts:/scripts
   
   streamlit:
     container_name: streamlit_henry

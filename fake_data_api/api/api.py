@@ -11,7 +11,11 @@ fake = Faker()
 
 class FakerApi(Resource):
     def get(self):
-        return self.get_customer()
+        data = []
+        num_customers = np.random.randint(0, 10)
+        for i in range(num_customers):
+            data.append(self.get_customer())
+        return data
 
     def get_email(self, name):
         first_name = name.split()[0]

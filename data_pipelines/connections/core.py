@@ -3,6 +3,7 @@ import json
 import logging
 from abc import ABC, abstractmethod
 from os.path import abspath, dirname
+import requests
 
 import psycopg2
 import mysql.connector as mysql
@@ -340,3 +341,38 @@ class MySQLConn(DBConn):
             password=self.password,
             database=self.database,
         )
+
+
+class HTTPConn(BaseConn):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.url = kwargs.get("url")
+        self.headers = kwargs.get("headers")
+        self.params = kwargs.get("params")
+        self.method = kwargs.get("method", "GET")
+
+    def connect(self):
+        self.session = requests.Session()
+
+    def close(self):
+        self.session.close()
+
+    def _send_request(self, data=None, timeout=None):
+        req = requests.Request(
+            url=self.url,
+            method=self.method,
+            params=self.params,
+            headers=self.headers,
+            json=data,
+        )
+        prepared = self.session.prepare_request(req)
+        response = self.session.send(prepared, timeout=timeout)
+        response.raise_for_status()
+        return response
+
+    def get_data(self):
+        response = self._send_request()
+        return response.json()
+
+    def load_data(self, data):
+        pass

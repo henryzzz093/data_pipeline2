@@ -8,6 +8,18 @@ CREATE TABLE IF NOT EXISTS henry.stocks (
     low numeric,
     close numeric,
     adj_close numeric,
-    volume int
+    volume int,
+    created_at timestamp DEFAULT CURRENT_TIMESTAMP 
+
 );
+
+CREATE TABLE IF NOT EXISTS henry.customers (
+    id serial PRIMARY KEY,
+    name varchar(50),
+    address varchar(200),
+    phone varchar(50),
+    email varchar(50),
+    created_at timestamp DEFAULT CURRENT_TIMESTAMP 
+);
+
 
