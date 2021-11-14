@@ -42,6 +42,6 @@ database = "henry"
 connection_string = f"{dbapi}://{username}:{password}@{host}:{port}/{database}"
 
 
-if __name__ == "__main__":
-    engine = db.create_engine(connection_string, echo=True)
-    Base.metadata.create_all(engine)
+# if __name__ == "__main__":
+#     engine = db.create_engine(connection_string, echo=True)
+#     Base.metadata.create_all(engine)

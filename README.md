@@ -37,6 +37,8 @@ Some major frameworks/libraries used to bootstrap this project:
 * [Docker](https://docs.docker.com/): Isolate application environment inside a container. 
 * [Mysql-connector-python](https://dev.mysql.com/doc/connector-python/en/): Used to establish connection with MySQL database
 * [Psycopg2-binary](https://pypi.org/project/psycopg2-binary/): Used to establish connection with Postgres database
+* [Streamlit](https://docs.streamlit.io/): Open-source libaray that create a simple custom web apps for visualize tables in different databases.
+* [Faker](https://faker.readthedocs.io/en/master/): Generating fake data to build tables.
 
 
 <!-- GETTING STARTED -->
@@ -81,29 +83,31 @@ and then connected to the MySQL inside the container by using the following:
 
 
 ![](images/inside_MySQL.png)
-here we can see before tirggering the MySQL dag, the table is empty.
-![](images/Empty_MySQL_table.png)
+
+we can check the postgres database by using 
+```bash
+docker exec -it pg_container 
+```
+
+and then use the PostgreSQL language to access the Postgres database, you can check the syntax from the following [link](https://www.postgresql.org/docs/13/app-psql.html)
 
 
 
-
-
-
-3. Check that the application is running by going to your [localhost:8080](http://localhost:8080/)
+4. Check that the application is running by going to your [localhost:8080](http://localhost:8080/)
 
 (Please note that application can take anywhere between 1 - 5 minutes to run depending on your particular system)
 
 
-3. Login to the Airflow Webserver using the following credentials:
-   - username: `henry` 
-   - password:`henry`
+5. Login to the Airflow Webserver using the following credentials:
+   - username: `airflow` 
+   - password:`airflow`
 
-4. Trigger the DAGs to ensure that they are working properly. 
+6. Trigger the DAGs to ensure that they are working properly. 
 ![](images/trigger2.png)
 
-5. Check the **How To** section for additional instructions.
+7. Check the **How To** section for additional instructions.
 
-6. Shut down the application by entering the following command in your terminal:<br>
+8. Shut down the application by entering the following command in your terminal:<br>
 ` make reset`
 
 
@@ -112,28 +116,39 @@ here we can see before tirggering the MySQL dag, the table is empty.
 
 ### 1. How to verify the Airflow is running
 
-
-After triggering the dag:
-![](images/stock_table_mysql.png)
-
-## 3. How to verify the Postgres table is created
+Open up a terminal and type:
 ```bash
-docker exec -it pg_container bash
+docker ps
 ```
-and then connected to the MySQL inside the container by using the following:
-- host = host.docker.internal
-- port = 5438
-- user = henry
-- passcode = henry
-- table name = stocks
+you will see a list of services inside the docker containers:
+![](images/docker_ps.png)
 
-![](images/inside_Postgres.png)
+## 2. How to verify our app successfully connected to both databases (MySQL, Postgres):
 
-here we can see before tirggering the Postgres dag, the table is empty.
-![](images/Postgres_empty_table.png)
+Open your browser and then go to the following url:
+http://localhost:8501/
 
-After triggering the dag:
-![](images/stock_table_Postgres.png)
+you can see from the following picture: 
+
+![](images/Streamlit_connected.png)
+
+✅emoji indicate that our apps has been connected to both databases.
+
+<strong>Row counts</strong> indicate that the table has been successfully created inside both database.
+
+## 3. How to verify the data has been successfully transfer into these two databases:
+
+After Triggering dags for both "csv_to_mysql" and "csv_to_postgres":
+
+![](images/trigger_csv_to_db.png)
+
+go to your localhost:8501 and you will see the table sample showing as below:
+
+![](images/sample_output_streamlit.png)
+
+
+
+
 
 <!--LICENSE -->
 ## License
