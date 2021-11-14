@@ -18,7 +18,7 @@
     <li><a href="#usage">Usage</a></li>
     <li><a href="#howto">HowTo</a></li>
     <li><a href="#license">License</a></li>
-    <li><a href="#contact">Contact</a></li>
+    <li><a href="#Maintainer">Maintainer</a></li>
   </ol>
 </details>
 
@@ -150,11 +150,11 @@ go to your localhost:8501 and you will see the table sample showing as below:
 
 
 
-<!--LICENSE -->
+<!-- LICENSE -->
 ## License
 Distributed under the MIT License.
 
-<!--Contact-->
+<!-- Maintainer -->
 ## Maintainer
 - Primary - [Henry Zou](https://github.com/henryzzz093) 
 - Secondary - [Domonique Gordon](https://github.com/DomoniqueGordon)
