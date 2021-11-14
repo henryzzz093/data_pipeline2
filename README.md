@@ -67,6 +67,7 @@ make run-app
 ```bash
 docker ps
 ```
+
 ![](images/docker_ps.png)
 
 using the following command to access MySQL inside the container:
