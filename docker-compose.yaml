@@ -213,7 +213,7 @@ services:
       - 5000:5000
     volumes:
       - ./fake_data_api/api:/api
-
+ 
 
 
 volumes:
