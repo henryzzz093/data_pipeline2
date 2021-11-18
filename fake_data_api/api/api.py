@@ -3,10 +3,24 @@ from flask import Flask
 from flask_restful import Resource, Api
 
 from faker import Faker
+import random
 
 app = Flask(__name__)
 api = Api(app)
 fake = Faker()
+
+product_list = [
+    "hat",
+    "cap",
+    "shirt",
+    "sweater",
+    "shorts",
+    "jeans",
+    "sneakers",
+    "boots",
+    "coats",
+    "accessories",
+]
 
 
 class FakerApi(Resource):
@@ -37,6 +51,38 @@ class FakerApi(Resource):
             "phone": phone,
             "email": email,
         }
+
+    def get_num_products(self):
+        data = []
+        num_products = np.random.randint(0, 10)
+        for i in range(num_products):
+            data.append(self.num_products())
+        return data
+
+    def get_products(self):
+        product_name = random.choice(product_list)
+        product_price = fake.random_int(1, 10000) / 100.0
+        return {
+            "product_name": product_name,
+            "product_price": product_price,
+        }
+
+    def get_num_stores(self):
+        data = []
+        num_stores = np.random.randint(0, 10)
+        for i in range(num_stores):
+            data.append(self.num_stores())
+        return data
+
+    def get_stores(self):
+        store_address = fake.address()
+
+        return {
+            "store_address": store_address,
+        }
+
+    def get_transactions(self):
+        pass
 
 
 api.add_resource(FakerApi, "/")
