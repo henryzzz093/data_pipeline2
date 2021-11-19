@@ -49,7 +49,7 @@ class Stores(Base):
     store_address = db.Column(db.VARCHAR(50))
 
 
-class Transaction(Base):
+class Transactions(Base):
     __tablename__ = "transaction"
     __table_args__ = {"schema": "henry"}
 
