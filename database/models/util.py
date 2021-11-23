@@ -51,7 +51,7 @@ class DBSetup:
             {"name": "sweater", "price": 69.99},
             {"name": "shorts", "price": 49.99},
             {"name": "jeans", "price": 39.99},
-            {"name": "neakers", "price": 30.99},
+            {"name": "neakers", "price": 32.99},
             {"name": "boots", "price": 199.99},
             {"name": "coats", "price": 249.99},
             {"name": "accessories", "price": 149.99},
