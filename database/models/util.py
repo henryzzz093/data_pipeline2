@@ -61,7 +61,7 @@ class DBSetup:
         for database_type in self._database_types:
             session = self._get_conn(database_type)
         for row in self._product_list:
-            product = Products(**row)
+            product = Products(**row)  # pass in as a kwargs
             session.add(product)
             session.commit()
 
