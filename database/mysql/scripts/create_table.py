@@ -32,6 +32,34 @@ class Customer(Base):
     created_at = db.Column(db.DateTime, server_default=func.now())
 
 
+class Products(Base):
+    __tablename__ = "products"
+    __table_args__ = {"schema": "henry"}
+
+    product_id = db.Column(db.Integer, primary_key=True)
+    product_name = db.Column(db.VARCHAR(50))
+    product_price = db.Column(db.Integer)
+
+
+class Stores(Base):
+    __tablename__ = "stores"
+    __table_args__ = {"schema": "henry"}
+
+    store_id = db.Column(db.Integer, primary_key=True)
+    store_address = db.Column(db.VARCHAR(50))
+
+
+class Transactions(Base):
+    __tablename__ = "transaction"
+    __table_args__ = {"schema": "henry"}
+
+    transaction_id = db.Column(db.Integer, primary_key=True)
+    transaction_date = db.Column(db.DateTime())
+    customer_id = db.Column(db.Integer, db.ForeignKey("customers.id"))
+    product_id = db.Column(db.Integer, db.ForeignKey("products.product_id"))
+    store_id = db.Column(db.Integer, db.ForeignKey("stores.store_id"))
+
+
 dbapi = "mysql+pymysql"
 username = "henry"
 password = "henry"

@@ -38,6 +38,30 @@ class FakerApi(Resource):
             "email": email,
         }
 
+    def get_num_products(self):
+        data = []
+        num_products = np.random.randint(0, 10)
+        for i in range(num_products):
+            data.append(self.num_products())
+        return data
+
+    def get_num_stores(self):
+        data = []
+        num_stores = np.random.randint(0, 10)
+        for i in range(num_stores):
+            data.append(self.num_stores())
+        return data
+
+    def get_stores(self):
+        store_address = fake.address()
+
+        return {
+            "store_address": store_address,
+        }
+
+    def get_transactions(self):
+        pass
+
 
 api.add_resource(FakerApi, "/")
 
