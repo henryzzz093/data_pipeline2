@@ -1,18 +1,13 @@
 import sqlalchemy as sa
 
-from sqlalchemy.orm import (
-    declared_attr,
-    declarative_base,
-    declarative_mixin,
-    relationship,
-)
+from sqlalchemy.ext.declarative import declared_attr, declarative_base
+from sqlalchemy.orm import relationship
 
 from sqlalchemy.sql import func
 
 Base = declarative_base()
 
 
-@declarative_mixin
 class BaseTable:
     @declared_attr
     def __tablename__(cls):  # pass in the class
@@ -28,18 +23,24 @@ class Customers(BaseTable, Base):
     address = sa.Column(sa.VARCHAR(200))
     phone = sa.Column(sa.VARCHAR(50))
     email = sa.Column(sa.VARCHAR(50))
+    transactions = relationship("Transactions", backref="customers")
 
 
 class Products(BaseTable, Base):
-
     name = sa.Column(sa.VARCHAR(50))
     price = sa.Column(sa.FLOAT)
+    transaction_details = relationship(
+        "TransactionDetails", backref="products"
+    )
 
 
 class Transactions(BaseTable, Base):
 
     transaction_date = sa.Column(sa.TIMESTAMP)
     customer_id = sa.Column(sa.INTEGER, sa.ForeignKey("henry.customers.id"))
+    transaction_details = relationship(
+        "TransactionDetails", backref="transactions"
+    )
 
 
 class TransactionDetails(BaseTable, Base):
@@ -50,25 +51,6 @@ class TransactionDetails(BaseTable, Base):
     )
     product_id = sa.Column(sa.INTEGER, sa.ForeignKey("henry.products.id"))
     quantity = sa.Column(sa.INTEGER)
-
-
-Customers.transactions = relationship(
-    "Transactions", order_by=Transactions.id, back_populates="customers"
-)
-
-
-TransactionDetails.transactions = relationship(
-    "Transactions",
-    order_by=Transactions.id,
-    back_populates="transaction_details",
-)
-
-
-Products.transactions_details = relationship(
-    "TransactionDetails",
-    order_by=TransactionDetails.id,
-    back_populates="products",
-)
 
 
 if __name__ == "__main__":
