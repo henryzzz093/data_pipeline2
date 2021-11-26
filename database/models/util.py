@@ -1,5 +1,5 @@
 import sqlalchemy as sa
-from database.models.core import Products
+from database.models.core import Base, Products
 
 
 class DBSetup:
@@ -19,9 +19,9 @@ class DBSetup:
             dbapi = "mysql+pymysql"
             port = 3307
 
-        return f"{dbapi}://{self.username}:{self.password}@{self.host}:{port}/{self.database}"  # noqa: E501
+        return f"{dbapi}://{self.username}:{self.password}@{self.host}:{port}"  # noqa: E501
 
-    def _get_conn(self, database_type):
+    def get_conn(self, database_type):
         conn_str = self._get_conn_str(database_type)
         connection = sa.create_engine(conn_str, echo=True)
         return connection
@@ -32,12 +32,27 @@ class DBSetup:
 
     def _create_tables(self):
         for database_type in self._database_types:
-            conn = self._get_conn(database_type)
+            conn = self.get_conn(database_type)
             if database_type == "postgres":
                 if not conn.dialect.has_schema(conn, self.schema):
                     conn.execute(sa.schema.CreateSchema(self.schema))
+            if database_type == "mysql":
+                conn.execute(f"CREATE DATABASE IF NOT EXISTS {self.schema}")
 
-    def _get_session(self, database_type):
+            Base.metadata.create_all(conn)
+
+    def reset(self):
+        for database_type in self._database_types:
+            conn = self.get_conn(database_type)
+            Base.metadata.drop_all(conn)
+
+            sql = f"DROP SCHEMA IF EXISTS {self.schema}"
+            if database_type == "postgres":
+                conn.execute(f"{sql} CASCADE")
+            else:
+                conn.execute(sql)
+
+    def get_session(self, database_type):
         conn = self.get_conn(database_type)
         Session = sa.orm.sessionmaker(bind=conn)
         return Session()
@@ -59,11 +74,11 @@ class DBSetup:
 
     def _seed_products(self):
         for database_type in self._database_types:
-            session = self._get_conn(database_type)
-        for row in self._product_list:
-            product = Products(**row)  # pass in as a kwargs
-            session.add(product)
-            session.commit()
+            session = self.get_session(database_type)
+            for row in self._product_list:
+                product = Products(**row)  # pass in as a kwargs
+                session.add(product)
+                session.commit()
 
     def run(self):
         self._create_tables()
