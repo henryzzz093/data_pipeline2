@@ -162,8 +162,11 @@ services:
       POSTGRES_DATABASE: henry
     ports:
       - "5438:5432"
-    volumes:
-      - ./database/postgres/create_table.sql:/docker-entrypoint-initdb.d/create_table.sql
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "henry"]
+      interval: 5s
+      retries: 5
+    restart: always
 
   mysql:
     container_name: ms_container
@@ -182,17 +185,6 @@ services:
       interval: 5s
       retries: 24
       start_period: 100s
-
-  ms_db_init:
-    build: 
-      context: .
-      dockerfile: ./database/mysql/ms_db.Dockerfile
-    depends_on: 
-      mysql:
-        condition: service_healthy
-    command: python3 create_table.py
-    volumes:
-      - ./database/mysql/scripts:/scripts
   
   streamlit:
     container_name: streamlit_henry
@@ -213,6 +205,20 @@ services:
       - 5000:5000
     volumes:
       - ./fake_data_api/api:/api
+
+  db_setup:
+    container_name: db_setup
+    build: 
+      context: .
+      dockerfile: ./database/Dockerfile
+    depends_on:
+      mysql:
+        condition: service_healthy
+      postgres2:
+        condition: service_healthy
+    volumes:
+      - ./database:/app/database
+
  
 
 

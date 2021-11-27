@@ -1,14 +1,31 @@
 import sqlalchemy as sa
-from database.models.core import Base, Products
+from database.models.core import (
+    Base,
+    Products,
+    Customers,
+    TransactionDetails,
+    Transactions,
+)
+from jinja2 import Environment, PackageLoader
+import logging
 
 
-class DBSetup:
+logging.basicConfig()
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
+
+class DBConn:
     def __init__(self, **kwargs):
         self.host = kwargs.get("host", "host.docker.internal")
         self.username = kwargs.get("username", "henry")
         self.password = kwargs.get("password", "henry")
         self.database = kwargs.get("database", "henry")
         self.schema = kwargs.get("schema", "henry")
+        self.jinja_env = Environment(
+            loader=PackageLoader("database", "templates")
+        )
+        self.log = logger
 
     def _get_conn_str(self, database_type):
         if database_type == "postgres":
@@ -30,6 +47,13 @@ class DBSetup:
     def _database_types(self):
         return ["mysql", "postgres"]
 
+    def get_session(self, database_type):
+        conn = self.get_conn(database_type)
+        Session = sa.orm.sessionmaker(bind=conn)
+        return Session()
+
+
+class DBSetup:
     def _create_tables(self):
         for database_type in self._database_types:
             conn = self.get_conn(database_type)
@@ -51,11 +75,6 @@ class DBSetup:
                 conn.execute(f"{sql} CASCADE")
             else:
                 conn.execute(sql)
-
-    def get_session(self, database_type):
-        conn = self.get_conn(database_type)
-        Session = sa.orm.sessionmaker(bind=conn)
-        return Session()
 
     @property
     def _product_list(self):
@@ -85,11 +104,54 @@ class DBSetup:
         self._seed_products()
 
 
+class ApplicationDataBase(DBConn):
+
+    db_type = "mysql"
+
+    def load_transaction(self, data):
+        customers = data.get("customers")
+        transactions = data.get("transactions")
+        transaction_details = data.get("transaction_details")
+
+        purchase = Customers(
+            **customers,
+            transactions=[
+                Transactions(
+                    **transactions,
+                    transaction_details=[
+                        TransactionDetails(**transaction_details)
+                    ],
+                )
+            ],
+        )
+
+        session = self.get_session(self.db_type)
+        session.add(purchase)
+        session.commit()
+
+    def load_transactions(self, data):
+        pass
+
+
 if __name__ == "__main__":
 
     kwargs = {"host": "localhost"}
 
-    setup = DBSetup(**kwargs)
-    setup.run()
+    data = {
+        "customers": {
+            "name": "test",
+            "address": "test",
+            "phone": 12345,
+            "email": "test",
+        },
+        "transactions": {
+            "transaction_date": "2021-10-01",
+        },
+        "transaction_details": {
+            "product_id": 3,
+            "quantity": 4,
+        },
+    }
 
-    print("Success")
+    db = ApplicationDataBase(**kwargs)
+    db.load_transaction(data)
