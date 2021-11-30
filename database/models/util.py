@@ -1,4 +1,7 @@
 import sqlalchemy as sa
+import numpy as np
+from faker import Faker
+
 from database.models.core import (
     Base,
     Products,
@@ -113,7 +116,7 @@ class ApplicationDataBase(DBConn):
         transactions = data.get("transactions")
         transaction_details = data.get("transaction_details")
 
-        purchase = Customers(
+        row = Customers(
             **customers,
             transactions=[
                 Transactions(
@@ -126,32 +129,95 @@ class ApplicationDataBase(DBConn):
         )
 
         session = self.get_session(self.db_type)
-        session.add(purchase)
+        session.add(row)
         session.commit()
 
     def load_transactions(self, data):
-        pass
+        for row in data:
+            self.load_transaction(row)
+
+    def get_product_ids(self):
+
+        stmt = sa.select(Products)
+        conn = self.get_conn(self.db_type)
+        products = conn.execute(stmt)
+
+        return [product.id for product in products]
+
+
+class DataGenerator:
+    def __init__(self):
+
+        kwargs = {"host": "localhost"}
+
+        self.fake = Faker()
+        self.db = ApplicationDataBase(**kwargs)
+
+    @property
+    def _name(self):
+        return self.fake.name()
+
+    @property
+    def _address(self):
+        return self.fake.address()
+
+    @property
+    def _phone(self):
+        return self.fake.phone_number()
+
+    def _get_email(self, name):
+        first_name = name.split()[0]
+        last_name = name.split()[-1]
+
+        index = np.random.randint(0, 3)
+        domains = ["gmail", "yahoo", "outlook"]
+        email = f"{first_name}.{last_name}@{domains[index]}.com"
+        return email.lower()
+
+    @property
+    def _product_id(self):
+        mylist = self.db.get_product_ids()
+        index = np.random.randint(0, len(mylist))
+        return mylist[index]
+
+    @property
+    def _quantity(self):
+        return np.random.randint(1, 10)
+
+    def get_data(self, date=None):
+
+        if date is None:
+            date = "2021-10-01"
+
+        name = self._name
+
+        data = {
+            "customers": {
+                "name": name,
+                "address": self._address,
+                "phone": self._phone,
+                "email": self._get_email(name),
+            },
+            "transactions": {
+                "transaction_date": date,
+            },
+            "transaction_details": {
+                "product_id": self._product_id,
+                "quantity": 4,
+            },
+        }
+
+        return data
 
 
 if __name__ == "__main__":
 
     kwargs = {"host": "localhost"}
 
-    data = {
-        "customers": {
-            "name": "test",
-            "address": "test",
-            "phone": 12345,
-            "email": "test",
-        },
-        "transactions": {
-            "transaction_date": "2021-10-01",
-        },
-        "transaction_details": {
-            "product_id": 3,
-            "quantity": 4,
-        },
-    }
+    data = DataGenerator()
 
     db = ApplicationDataBase(**kwargs)
-    db.load_transaction(data)
+
+    datalist = [data.get_data() for i in range(10)]
+
+    db.load_transactions(datalist)
