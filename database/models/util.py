@@ -1,5 +1,6 @@
 import sqlalchemy as sa
 import numpy as np
+import datetime as dt
 from faker import Faker
 
 from database.models.core import (
@@ -9,13 +10,25 @@ from database.models.core import (
     TransactionDetails,
     Transactions,
 )
-from jinja2 import Environment, PackageLoader
 import logging
 
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
+
+PRODUCT_LIST = [
+    {"name": "hat", "price": 10.99},
+    {"name": "cap", "price": 6.99},
+    {"name": "shirt", "price": 50.99},
+    {"name": "sweater", "price": 69.99},
+    {"name": "shorts", "price": 49.99},
+    {"name": "jeans", "price": 39.99},
+    {"name": "neakers", "price": 32.99},
+    {"name": "boots", "price": 199.99},
+    {"name": "coats", "price": 249.99},
+    {"name": "accessories", "price": 149.99},
+]
 
 
 class DBConn:
@@ -25,9 +38,6 @@ class DBConn:
         self.password = kwargs.get("password", "henry")
         self.database = kwargs.get("database", "henry")
         self.schema = kwargs.get("schema", "henry")
-        self.jinja_env = Environment(
-            loader=PackageLoader("database", "templates")
-        )
         self.log = logger
 
     def _get_conn_str(self, database_type):
@@ -56,102 +66,19 @@ class DBConn:
         return Session()
 
 
-class DBSetup:
-    def _create_tables(self):
-        for database_type in self._database_types:
-            conn = self.get_conn(database_type)
-            if database_type == "postgres":
-                if not conn.dialect.has_schema(conn, self.schema):
-                    conn.execute(sa.schema.CreateSchema(self.schema))
-            if database_type == "mysql":
-                conn.execute(f"CREATE DATABASE IF NOT EXISTS {self.schema}")
-
-            Base.metadata.create_all(conn)
-
-    def reset(self):
-        for database_type in self._database_types:
-            conn = self.get_conn(database_type)
-            Base.metadata.drop_all(conn)
-
-            sql = f"DROP SCHEMA IF EXISTS {self.schema}"
-            if database_type == "postgres":
-                conn.execute(f"{sql} CASCADE")
-            else:
-                conn.execute(sql)
-
-    @property
-    def _product_list(self):
-        return [
-            {"name": "hat", "price": 10.99},
-            {"name": "cap", "price": 6.99},
-            {"name": "shirt", "price": 50.99},
-            {"name": "sweater", "price": 69.99},
-            {"name": "shorts", "price": 49.99},
-            {"name": "jeans", "price": 39.99},
-            {"name": "neakers", "price": 32.99},
-            {"name": "boots", "price": 199.99},
-            {"name": "coats", "price": 249.99},
-            {"name": "accessories", "price": 149.99},
-        ]
-
-    def _seed_products(self):
-        for database_type in self._database_types:
-            session = self.get_session(database_type)
-            for row in self._product_list:
-                product = Products(**row)  # pass in as a kwargs
-                session.add(product)
-                session.commit()
-
-    def run(self):
-        self._create_tables()
-        self._seed_products()
-
-
-class ApplicationDataBase(DBConn):
-
-    db_type = "mysql"
-
-    def load_transaction(self, data):
-        customers = data.get("customers")
-        transactions = data.get("transactions")
-        transaction_details = data.get("transaction_details")
-
-        row = Customers(
-            **customers,
-            transactions=[
-                Transactions(
-                    **transactions,
-                    transaction_details=[
-                        TransactionDetails(**transaction_details)
-                    ],
-                )
-            ],
-        )
-
-        session = self.get_session(self.db_type)
-        session.add(row)
-        session.commit()
-
-    def load_transactions(self, data):
-        for row in data:
-            self.load_transaction(row)
-
-    def get_product_ids(self):
-
-        stmt = sa.select(Products)
-        conn = self.get_conn(self.db_type)
-        products = conn.execute(stmt)
-
-        return [product.id for product in products]
-
-
 class DataGenerator:
     def __init__(self):
-
-        kwargs = {"host": "localhost"}
-
         self.fake = Faker()
-        self.db = ApplicationDataBase(**kwargs)
+
+    def _get_dates(self):
+        start_date = dt.date(2021, 1, 1)
+        end_date = dt.datetime.now().date()
+        diff = (end_date - start_date).days
+
+        for i in range(1, diff):
+            date = start_date + dt.timedelta(days=i)
+            date = date.strftime("%Y-%m-%d")
+            yield date
 
     @property
     def _name(self):
@@ -176,48 +103,127 @@ class DataGenerator:
 
     @property
     def _product_id(self):
-        mylist = self.db.get_product_ids()
-        index = np.random.randint(0, len(mylist))
-        return mylist[index]
+        product_ids = list(range(1, len(PRODUCT_LIST) + 1))
+        index = np.random.randint(0, len(product_ids))
+        return product_ids[index]
 
     @property
     def _quantity(self):
         return np.random.randint(1, 10)
 
-    def get_data(self, date=None):
+    def get_data(self):
 
-        if date is None:
-            date = "2021-10-01"
+        for date in self._get_dates():
 
-        name = self._name
+            for _ in range(np.random.randint(1, 15)):
 
-        data = {
-            "customers": {
-                "name": name,
-                "address": self._address,
-                "phone": self._phone,
-                "email": self._get_email(name),
-            },
-            "transactions": {
-                "transaction_date": date,
-            },
-            "transaction_details": {
-                "product_id": self._product_id,
-                "quantity": 4,
-            },
-        }
+                name = self._name
 
-        return data
+                data = {
+                    "customers": {
+                        "name": name,
+                        "address": self._address,
+                        "phone": self._phone,
+                        "email": self._get_email(name),
+                    },
+                    "transactions": {
+                        "transaction_date": date,
+                    },
+                    "transaction_details": {
+                        "product_id": self._product_id,
+                        "quantity": np.random.randint(1, 10),
+                    },
+                }
+
+                yield data
+
+
+class DBSetup(DBConn):
+    def _create_tables(self):
+        for database_type in self._database_types:
+            conn = self.get_conn(database_type)
+            if database_type == "postgres":
+                if not conn.dialect.has_schema(conn, self.schema):
+                    conn.execute(sa.schema.CreateSchema(self.schema))
+            if database_type == "mysql":
+                conn.execute(f"CREATE DATABASE IF NOT EXISTS {self.schema}")
+
+            Base.metadata.create_all(conn)
+
+    def reset(self):
+        for database_type in self._database_types:
+            conn = self.get_conn(database_type)
+            Base.metadata.drop_all(conn)
+
+            sql = f"DROP SCHEMA IF EXISTS {self.schema}"
+            if database_type == "postgres":
+                conn.execute(f"{sql} CASCADE")
+            else:
+                conn.execute(sql)
+
+    def load_transaction(self, data, session):
+
+        customers = data.get("customers")
+        transactions = data.get("transactions")
+        transaction_details = data.get("transaction_details")
+
+        row = Customers(  # maintain the relationship between each tables
+            **customers,
+            transactions=[
+                Transactions(
+                    **transactions,
+                    transaction_details=[
+                        TransactionDetails(**transaction_details)
+                    ],
+                )
+            ],
+        )
+
+        session.add(row)
+        session.commit()
+
+    def _seed_transactions(self):
+        my_fake_data = DataGenerator()
+        session = self.get_session("mysql")
+        for line in my_fake_data.get_data():
+            self.load_transaction(line, session)
+
+    @property
+    def _product_list(self):
+        return PRODUCT_LIST
+
+    def _seed_products(self):
+        for database_type in self._database_types:  #
+            session = self.get_session(database_type)
+            for row in self._product_list:
+                product = Products(**row)  # pass in as a kwargs
+                session.add(product)  # insert data into both databases
+                session.commit()
+
+    def run(self):
+        self.reset()
+        self._create_tables()
+        self._seed_products()
+        self._seed_transactions()
+
+
+class ApplicationDataBase(DBConn):
+
+    db_type = "mysql"
+
+    def load_transactions(self, data):
+        for row in data:
+            self.load_transaction(row)
+
+    def get_product_ids(self):
+
+        return list(range(1, len(PRODUCT_LIST) + 1))
 
 
 if __name__ == "__main__":
 
     kwargs = {"host": "localhost"}
 
-    data = DataGenerator()
+    db = DBSetup(**kwargs)
 
-    db = ApplicationDataBase(**kwargs)
-
-    datalist = [data.get_data() for i in range(10)]
-
-    db.load_transactions(datalist)
+    db._seed_transactions()
