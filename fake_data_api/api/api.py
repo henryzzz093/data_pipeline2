@@ -15,13 +15,11 @@ db = ApplicationDataBase()
 class FakerApi(Resource):
     def get(self):
         parser = reqparse.RequestParser()
-        parser.add_argument("date", type=str)  # better way to do that?
+        parser.add_argument("date", type=str)
+        parser.add_argument("table_name", type=str)
+        table_name = parser.parse_args().get("table_name")
         date = parser.parse_args().get("date")
-        return {
-            "customers": db.get_customers(date),
-            "transactions": db.get_transactions(date),
-            "transaction_details": db.get_transaction_details(date),
-        }
+        return db.get_data(date, table_name)
 
 
 api.add_resource(FakerApi, "/")

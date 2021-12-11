@@ -236,19 +236,9 @@ class ApplicationDataBase(DBConn):
         temp = self.jinja_env.get_template(filename)
         return temp.render(**kwargs)
 
-    def get_customers(self, date):
+    def get_data(self, date, table_name):
         kwargs = {"date": date}
-        sql = self._get_template("customers.sql", **kwargs)
-        return self.run_query(sql)
-
-    def get_transactions(self, date):
-        kwargs = {"date": date}
-        sql = self._get_template("transactions.sql", **kwargs)
-        return self.run_query(sql)
-
-    def get_transaction_details(self, date):
-        kwargs = {"date": date}
-        sql = self._get_template("transaction_details.sql", **kwargs)
+        sql = self._get_template(f"{table_name}.sql", **kwargs)
         return self.run_query(sql)
 
     def run_query(self, sql):
@@ -262,5 +252,11 @@ if __name__ == "__main__":
     kwargs = {"host": "localhost"}
 
     app = ApplicationDataBase(**kwargs)
-    data = app._get_transaction_details("2021-08-03")
-    print(data)
+    data1 = app.get_data("2021-08-03", "customers")
+    data2 = app.get_data("2021-05-01", "transactions")
+    data3 = app.get_data("2021-07-21", "transaction_details")
+    print(data1)
+    print("******")
+    print(data2)
+    print("******")
+    print(data3)

@@ -132,3 +132,9 @@ dmypy.json
 # customize
 logs/
 */data/output/output_data*
+
+# Terraform
+**/.terraform.lock.hcl
+**/.idea
+**/.terraform
+**/terraform.tfstate*
