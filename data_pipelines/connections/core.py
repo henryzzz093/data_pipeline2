@@ -376,3 +376,16 @@ class HTTPConn(BaseConn):
 
     def load_data(self, data):
         pass
+
+
+if __name__ == "__main__":
+
+    from pprint import pprint
+
+    kwargs = {"url": "http://127.0.0.1:5000", "params": {"date": "2021-01-02"}}
+
+    conn = HTTPConn(**kwargs)
+
+    with conn:
+        data = conn.get_data()
+        pprint(data)
