@@ -2,3 +2,7 @@ Faker
 Flask
 Flask-RESTful
 numpy
+sqlalchemy
+psycopg2-binary
+pymysql
+numpy

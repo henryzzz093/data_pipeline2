@@ -3,3 +3,4 @@ psycopg2-binary
 pymysql
 faker
 numpy
+jinja2

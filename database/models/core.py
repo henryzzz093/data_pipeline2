@@ -9,6 +9,10 @@ Base = declarative_base()
 
 
 class BaseTable:
+    """
+    defind the basetable structure
+    """
+
     @declared_attr
     def __tablename__(cls):  # pass in the class
         return cls.__name__.lower()
@@ -18,15 +22,25 @@ class BaseTable:
     created_at = sa.Column(sa.TIMESTAMP, server_default=func.now())
 
 
-class Customers(BaseTable, Base):
+class Customers(BaseTable, Base):  # queston about the second parameter
+    """
+    contains the table structure of Customer table
+    """
+
     name = sa.Column(sa.VARCHAR(50))
     address = sa.Column(sa.VARCHAR(200))
     phone = sa.Column(sa.VARCHAR(50))
     email = sa.Column(sa.VARCHAR(50))
-    transactions = relationship("Transactions", backref="customers")
+    transactions = relationship(
+        "Transactions", backref="customers"
+    )  # define the relationship
 
 
 class Products(BaseTable, Base):
+    """
+    contains the table structure of Products table
+    """
+
     name = sa.Column(sa.VARCHAR(50))
     price = sa.Column(sa.FLOAT)
     transaction_details = relationship(
@@ -35,6 +49,9 @@ class Products(BaseTable, Base):
 
 
 class Transactions(BaseTable, Base):
+    """
+    contains the table structure of Transactions table
+    """
 
     transaction_date = sa.Column(sa.TIMESTAMP)
     customer_id = sa.Column(sa.INTEGER, sa.ForeignKey("henry.customers.id"))
@@ -44,6 +61,9 @@ class Transactions(BaseTable, Base):
 
 
 class TransactionDetails(BaseTable, Base):
+    """
+    contains the table structure of TransactionDetails table
+    """
 
     __tablename__ = "transaction_details"
     transaction_id = sa.Column(

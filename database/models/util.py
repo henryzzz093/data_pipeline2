@@ -2,6 +2,7 @@ import sqlalchemy as sa
 import numpy as np
 import datetime as dt
 from faker import Faker
+from jinja2 import Environment, PackageLoader
 
 from database.models.core import (
     Base,
@@ -33,6 +34,9 @@ PRODUCT_LIST = [
 
 class DBConn:
     def __init__(self, **kwargs):
+        """
+        initialize the attributes of a class.
+        """
         self.host = kwargs.get("host", "host.docker.internal")
         self.username = kwargs.get("username", "henry")
         self.password = kwargs.get("password", "henry")
@@ -41,6 +45,10 @@ class DBConn:
         self.log = logger
 
     def _get_conn_str(self, database_type):
+        """
+        return the connection string based on database types
+        """
+
         if database_type == "postgres":
             dbapi = "postgresql"
             port = 5438
@@ -52,6 +60,10 @@ class DBConn:
         return f"{dbapi}://{self.username}:{self.password}@{self.host}:{port}"  # noqa: E501
 
     def get_conn(self, database_type):
+        """
+        setup the connection to database
+        """
+
         conn_str = self._get_conn_str(database_type)
         connection = sa.create_engine(conn_str, echo=True)
         return connection
@@ -71,13 +83,13 @@ class DataGenerator:
         self.fake = Faker()
 
     def _get_dates(self):
-        start_date = dt.date(2021, 1, 1)
-        end_date = dt.datetime.now().date()
-        diff = (end_date - start_date).days
+        start_date = dt.date(2021, 1, 1)  # set the start date
+        end_date = dt.datetime.now().date()  # set the end date
+        diff = (end_date - start_date).days  # calculate the delta
 
         for i in range(1, diff):
-            date = start_date + dt.timedelta(days=i)
-            date = date.strftime("%Y-%m-%d")
+            date = start_date + dt.timedelta(days=i)  # get each of the data
+            date = date.strftime("%Y-%m-%d")  # convert it into datetime string
             yield date
 
     @property
@@ -103,9 +115,13 @@ class DataGenerator:
 
     @property
     def _product_id(self):
-        product_ids = list(range(1, len(PRODUCT_LIST) + 1))
+        product_ids = list(
+            range(1, len(PRODUCT_LIST) + 1)
+        )  # a list of [0, ... len(Product_list)+1]
         index = np.random.randint(0, len(product_ids))
-        return product_ids[index]
+        return product_ids[
+            index
+        ]  # return a random number from 0 to length of string
 
     @property
     def _quantity(self):
@@ -208,22 +224,43 @@ class DBSetup(DBConn):
 
 
 class ApplicationDataBase(DBConn):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.jinja_env = Environment(
+            loader=PackageLoader("database", "templates")
+        )
 
     db_type = "mysql"
 
-    def load_transactions(self, data):
-        for row in data:
-            self.load_transaction(row)
+    def _get_template(self, filename, **kwargs):
+        temp = self.jinja_env.get_template(filename)
+        return temp.render(**kwargs)
 
-    def get_product_ids(self):
+    def get_customers(self, date):
+        kwargs = {"date": date}
+        sql = self._get_template("customers.sql", **kwargs)
+        return self.run_query(sql)
 
-        return list(range(1, len(PRODUCT_LIST) + 1))
+    def get_transactions(self, date):
+        kwargs = {"date": date}
+        sql = self._get_template("transactions.sql", **kwargs)
+        return self.run_query(sql)
+
+    def get_transaction_details(self, date):
+        kwargs = {"date": date}
+        sql = self._get_template("transaction_details.sql", **kwargs)
+        return self.run_query(sql)
+
+    def run_query(self, sql):
+        conn = self.get_conn("mysql")
+        result = conn.execute(sql)
+        return [dict(row) for row in result.fetchall()]
 
 
 if __name__ == "__main__":
 
     kwargs = {"host": "localhost"}
 
-    db = DBSetup(**kwargs)
-
-    db._seed_transactions()
+    app = ApplicationDataBase(**kwargs)
+    data = app._get_transaction_details("2021-08-03")
+    print(data)

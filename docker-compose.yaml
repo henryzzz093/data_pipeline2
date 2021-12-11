@@ -205,6 +205,7 @@ services:
       - 5000:5000
     volumes:
       - ./fake_data_api/api:/api
+      - ./database:/api/database
 
   db_setup:
     container_name: db_setup
