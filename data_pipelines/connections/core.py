@@ -280,6 +280,7 @@ class DBConn(BaseConn):
                         "'", ""
                     )  # create a placeholder value template
                     sqlstatement = f"INSERT INTO {self.schema}.{self.table} ({columns}) VALUES {values_template}"  # noqa:E501
+                    self.log.info(sqlstatement)
                     cursor.execute(sqlstatement, values)
                     self.conn.commit()
 

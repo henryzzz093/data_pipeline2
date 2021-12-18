@@ -87,7 +87,7 @@ class DataGenerator:
         end_date = dt.datetime.now().date()  # set the end date
         diff = (end_date - start_date).days  # calculate the delta
 
-        for i in range(1, diff):
+        for i in range(0, diff):
             date = start_date + dt.timedelta(days=i)  # get each of the data
             date = date.strftime("%Y-%m-%d")  # convert it into datetime string
             yield date

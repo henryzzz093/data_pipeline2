@@ -6,11 +6,12 @@ import json
 
 class AWSConn(BaseConn):
     def __init__(self, **kwargs):
-        self.aws_access_key_id = kwargs.get("aws_access_key")
-        self.aws_secret_access_key = kwargs.get("aws_secret_key")
+        self.aws_access_key_id = kwargs.get("aws_access_key_id")
+        self.aws_secret_access_key = kwargs.get("aws_secret_key_id")
         self.session = None
 
     def connect(self):
+        print(self.aws_access_key_id, self.aws_secret_access_key)
         self.session = boto3.Session(
             aws_access_key_id=self.aws_access_key_id,
             aws_secret_access_key=self.aws_secret_access_key,
