@@ -52,7 +52,7 @@ with dag:
             "host": "host.docker.internal",
             "port": 5438,
             "username": "henry",
-            "password": "henry",
+            "password": "henry123",
             "database": "henry",
             "table": table,
             "schema": "henry",

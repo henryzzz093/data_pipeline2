@@ -383,7 +383,7 @@ if __name__ == "__main__":
 
     from pprint import pprint
 
-    kwargs = {"url": "http://127.0.0.1:5000", "params": {"date": "2021-01-02"}}
+    kwargs = {"url": "http://127.0.0.1:5000", "params": {"date": "2021-01-01"}}
 
     conn = HTTPConn(**kwargs)
 

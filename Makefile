@@ -41,9 +41,12 @@ run-app-dev:
 
 run-app:
 	@tput setaf 2;
+	@echo Creating Infrastructure!
+	@make apply;  
 	@echo Launching application!
 	@tput sgr0;
 	@docker-compose up;
+	
 
 
 reset:
@@ -54,6 +57,17 @@ reset:
 
 up:
 	@docker-compose up;
+
+
+plan:
+	@terraform -chdir=terraform plan;
+
+apply:
+	@terraform -chdir=terraform apply --auto-approve;
+
+destroy:
+	@terraform -chdir=terraform destroy --auto-approve;
+	@docker-compose down;
 
 
 

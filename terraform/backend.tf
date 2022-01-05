@@ -1,6 +1,6 @@
 terraform {
   backend "s3" {
-    profile = "datalake"
+    profile = "terraform"
     bucket  = "terraform-henry"
     key     = "data-piplines/tf.state"
     region  = "us-west-2"

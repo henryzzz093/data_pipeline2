@@ -37,7 +37,9 @@ class DBConn:
         """
         initialize the attributes of a class.
         """
+        self.db_type = kwargs.get("db_type")
         self.host = kwargs.get("host", "host.docker.internal")
+        self.port = kwargs.get("port")
         self.username = kwargs.get("username", "henry")
         self.password = kwargs.get("password", "henry")
         self.database = kwargs.get("database", "henry")
@@ -51,13 +53,11 @@ class DBConn:
 
         if database_type == "postgres":
             dbapi = "postgresql"
-            port = 5438
 
         elif database_type == "mysql":
             dbapi = "mysql+pymysql"
-            port = 3307
 
-        return f"{dbapi}://{self.username}:{self.password}@{self.host}:{port}"  # noqa: E501
+        return f"{dbapi}://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}"  # noqa: E501
 
     def get_conn(self, database_type):
         """
@@ -67,10 +67,6 @@ class DBConn:
         conn_str = self._get_conn_str(database_type)
         connection = sa.create_engine(conn_str, echo=True)
         return connection
-
-    @property
-    def _database_types(self):
-        return ["mysql", "postgres"]
 
     def get_session(self, database_type):
         conn = self.get_conn(database_type)
@@ -156,26 +152,26 @@ class DataGenerator:
 
 class DBSetup(DBConn):
     def _create_tables(self):
-        for database_type in self._database_types:
-            conn = self.get_conn(database_type)
-            if database_type == "postgres":
-                if not conn.dialect.has_schema(conn, self.schema):
-                    conn.execute(sa.schema.CreateSchema(self.schema))
-            if database_type == "mysql":
-                conn.execute(f"CREATE DATABASE IF NOT EXISTS {self.schema}")
 
-            Base.metadata.create_all(conn)
+        conn = self.get_conn(self.db_type)
+        if self.db_type == "postgres":
+            if not conn.dialect.has_schema(conn, self.schema):
+                conn.execute(sa.schema.CreateSchema(self.schema))
+        if self.db_type == "mysql":
+            conn.execute(f"CREATE DATABASE IF NOT EXISTS {self.schema}")
+
+        Base.metadata.create_all(conn)
 
     def reset(self):
-        for database_type in self._database_types:
-            conn = self.get_conn(database_type)
-            Base.metadata.drop_all(conn)
 
-            sql = f"DROP SCHEMA IF EXISTS {self.schema}"
-            if database_type == "postgres":
-                conn.execute(f"{sql} CASCADE")
-            else:
-                conn.execute(sql)
+        conn = self.get_conn(self.db_type)
+        Base.metadata.drop_all(conn)
+
+        sql = f"DROP SCHEMA IF EXISTS {self.schema}"
+        if self.db_type == "postgres":
+            conn.execute(f"{sql} CASCADE")
+        else:
+            conn.execute(sql)
 
     def load_transaction(self, data, session):
 
@@ -209,12 +205,11 @@ class DBSetup(DBConn):
         return PRODUCT_LIST
 
     def _seed_products(self):
-        for database_type in self._database_types:  #
-            session = self.get_session(database_type)
-            for row in self._product_list:
-                product = Products(**row)  # pass in as a kwargs
-                session.add(product)  # insert data into both databases
-                session.commit()
+        session = self.get_session(self.db_type)
+        for row in self._product_list:
+            product = Products(**row)  # pass in as a kwargs
+            session.add(product)  # insert data into both databases
+            session.commit()
 
     def run(self):
         self.reset()
