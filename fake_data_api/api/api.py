@@ -1,6 +1,7 @@
 from flask import Flask
 from flask_restful import Resource, Api, reqparse
 from database.models.util import ApplicationDataBase
+from database.constants import ConnectionKwargs
 
 
 from faker import Faker
@@ -9,7 +10,7 @@ app = Flask(__name__)
 api = Api(app)
 fake = Faker()
 
-db = ApplicationDataBase()
+db = ApplicationDataBase(**ConnectionKwargs.APP_DB_LOCAL.value)
 
 
 class FakerApi(Resource):

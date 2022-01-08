@@ -1,6 +1,8 @@
 import sqlalchemy as sa
 import numpy as np
 import datetime as dt
+
+from sqlalchemy.engine import create_engine
 from faker import Faker
 from jinja2 import Environment, PackageLoader
 
@@ -38,12 +40,12 @@ class DBConn:
         initialize the attributes of a class.
         """
         self.db_type = kwargs.get("db_type")
-        self.host = kwargs.get("host", "host.docker.internal")
+        self.host = kwargs.get("host")
         self.port = kwargs.get("port")
-        self.username = kwargs.get("username", "henry")
-        self.password = kwargs.get("password", "henry")
-        self.database = kwargs.get("database", "henry")
-        self.schema = kwargs.get("schema", "henry")
+        self.username = kwargs.get("username")
+        self.password = kwargs.get("password")
+        self.database = kwargs.get("database")
+        self.schema = kwargs.get("schema")
         self.log = logger
 
     def _get_conn_str(self, database_type):
@@ -53,11 +55,11 @@ class DBConn:
 
         if database_type == "postgres":
             dbapi = "postgresql"
+            return f"{dbapi}://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}"  # noqa: E501
 
         elif database_type == "mysql":
             dbapi = "mysql+pymysql"
-
-        return f"{dbapi}://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}"  # noqa: E501
+            return f"{dbapi}://{self.username}:{self.password}@{self.host}:{self.port}"  # noqa: E501
 
     def get_conn(self, database_type):
         """
@@ -65,7 +67,7 @@ class DBConn:
         """
 
         conn_str = self._get_conn_str(database_type)
-        connection = sa.create_engine(conn_str, echo=True)
+        connection = sa.create_engine(conn_str, echo=True, pool_recycle=10)
         return connection
 
     def get_session(self, database_type):
@@ -79,7 +81,7 @@ class DataGenerator:
         self.fake = Faker()
 
     def _get_dates(self):
-        start_date = dt.date(2021, 1, 1)  # set the start date
+        start_date = dt.date(2022, 1, 1)  # set the start date
         end_date = dt.datetime.now().date()  # set the end date
         diff = (end_date - start_date).days  # calculate the delta
 
@@ -225,8 +227,6 @@ class ApplicationDataBase(DBConn):
             loader=PackageLoader("database", "templates")
         )
 
-    db_type = "mysql"
-
     def _get_template(self, filename, **kwargs):
         temp = self.jinja_env.get_template(filename)
         return temp.render(**kwargs)
@@ -243,15 +243,11 @@ class ApplicationDataBase(DBConn):
 
 
 if __name__ == "__main__":
+    connection_str_1 = "mysql+pymysql://henry:henry123@127.0.0.1:3307"
+    connection_str_2 = "mysql+pymysql://henry:henry123@127.0.0.1:3307/henry"
 
-    kwargs = {"host": "localhost"}
+    engine = create_engine(connection_str_2)
 
-    app = ApplicationDataBase(**kwargs)
-    data1 = app.get_data("2021-08-03", "customers")
-    data2 = app.get_data("2021-05-01", "transactions")
-    data3 = app.get_data("2021-07-21", "transaction_details")
-    print(data1)
-    print("******")
-    print(data2)
-    print("******")
-    print(data3)
+    engine.connect()
+
+    print("Success!")
