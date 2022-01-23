@@ -6,6 +6,7 @@ import datetime as dt
 from faker import Faker
 from jinja2 import Environment, PackageLoader
 
+
 from database.models.core import (
     Base,
     Products,
