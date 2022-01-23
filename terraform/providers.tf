@@ -1,5 +1,5 @@
 provider "aws" {
-  profile = "datalake"
+  profile = "terraform"
   region  = "us-west-2"
 }
 

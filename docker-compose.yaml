@@ -161,7 +161,7 @@ services:
     restart: always
     environment: 
       POSTGRES_USER: henry
-      POSTGRES_PASSWORD: henry
+      POSTGRES_PASSWORD: henry123
       POSTGRES_DATABASE: henry
     ports:
       - "5438:5432"
@@ -174,12 +174,12 @@ services:
   mysql:
     container_name: ms_container
     platform: linux/x86_64
-    image: mysql
+    image: mysql:5.7
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: henry
       MYSQL_USER: henry
-      MYSQL_PASSWORD: henry
+      MYSQL_PASSWORD: henry123
       MYSQL_DATABASE: henry
     ports:
       - "3307:3306"

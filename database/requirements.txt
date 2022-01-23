@@ -4,3 +4,4 @@ pymysql
 faker
 numpy
 jinja2
+cryptography

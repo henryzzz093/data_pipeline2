@@ -76,7 +76,7 @@ class TransactionDetails(BaseTable, Base):
 if __name__ == "__main__":
     dbapi = "mysql+pymysql"
     username = "henry"
-    password = "henry"
+    password = "henry123"
     host = "localhost"
     port = "3307"
     database = "henry"

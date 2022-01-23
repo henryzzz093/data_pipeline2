@@ -1,8 +1,11 @@
 import sqlalchemy as sa
 import numpy as np
 import datetime as dt
+
+# from sqlalchemy.engine import create_engine
 from faker import Faker
 from jinja2 import Environment, PackageLoader
+
 
 from database.models.core import (
     Base,
@@ -37,11 +40,13 @@ class DBConn:
         """
         initialize the attributes of a class.
         """
-        self.host = kwargs.get("host", "host.docker.internal")
-        self.username = kwargs.get("username", "henry")
-        self.password = kwargs.get("password", "henry")
-        self.database = kwargs.get("database", "henry")
-        self.schema = kwargs.get("schema", "henry")
+        self.db_type = kwargs.get("db_type")
+        self.host = kwargs.get("host")
+        self.port = kwargs.get("port")
+        self.username = kwargs.get("username")
+        self.password = kwargs.get("password")
+        self.database = kwargs.get("database")
+        self.schema = kwargs.get("schema")
         self.log = logger
 
     def _get_conn_str(self, database_type):
@@ -51,29 +56,21 @@ class DBConn:
 
         if database_type == "postgres":
             dbapi = "postgresql"
-            port = 5438
+            return f"{dbapi}://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}"  # noqa: E501
 
         elif database_type == "mysql":
             dbapi = "mysql+pymysql"
-            port = 3307
+            return f"{dbapi}://{self.username}:{self.password}@{self.host}:{self.port}"  # noqa: E501
 
-        return f"{dbapi}://{self.username}:{self.password}@{self.host}:{port}"  # noqa: E501
-
-    def get_conn(self, database_type):
+    def get_conn(self):
         """
         setup the connection to database
         """
 
-        conn_str = self._get_conn_str(database_type)
-        connection = sa.create_engine(conn_str, echo=True)
-        return connection
+        conn_str = self._get_conn_str(self.db_type)
+        return sa.create_engine(conn_str, echo=True)
 
-    @property
-    def _database_types(self):
-        return ["mysql", "postgres"]
-
-    def get_session(self, database_type):
-        conn = self.get_conn(database_type)
+    def get_session(self, conn):
         Session = sa.orm.sessionmaker(bind=conn)
         return Session()
 
@@ -83,7 +80,7 @@ class DataGenerator:
         self.fake = Faker()
 
     def _get_dates(self):
-        start_date = dt.date(2021, 1, 1)  # set the start date
+        start_date = dt.date(2019, 1, 1)  # set the start date
         end_date = dt.datetime.now().date()  # set the end date
         diff = (end_date - start_date).days  # calculate the delta
 
@@ -131,7 +128,7 @@ class DataGenerator:
 
         for date in self._get_dates():
 
-            for _ in range(np.random.randint(1, 15)):
+            for _ in range(1):
 
                 name = self._name
 
@@ -155,35 +152,31 @@ class DataGenerator:
 
 
 class DBSetup(DBConn):
-    def _create_tables(self):
-        for database_type in self._database_types:
-            conn = self.get_conn(database_type)
-            if database_type == "postgres":
-                if not conn.dialect.has_schema(conn, self.schema):
-                    conn.execute(sa.schema.CreateSchema(self.schema))
-            if database_type == "mysql":
-                conn.execute(f"CREATE DATABASE IF NOT EXISTS {self.schema}")
+    def _create_tables(self, conn):
+        if self.db_type == "postgres":
+            if not conn.dialect.has_schema(conn, self.schema):
+                conn.execute(sa.schema.CreateSchema(self.schema))
+        if self.db_type == "mysql":
+            conn.execute(f"CREATE DATABASE IF NOT EXISTS {self.schema}")
 
-            Base.metadata.create_all(conn)
+        Base.metadata.create_all(conn)
 
-    def reset(self):
-        for database_type in self._database_types:
-            conn = self.get_conn(database_type)
-            Base.metadata.drop_all(conn)
+    def reset(self, conn):
+        self.log.info(f"Resetting database: {self.db_type.upper()}")
+        Base.metadata.drop_all(conn)
 
-            sql = f"DROP SCHEMA IF EXISTS {self.schema}"
-            if database_type == "postgres":
-                conn.execute(f"{sql} CASCADE")
-            else:
-                conn.execute(sql)
+        sql = f"DROP SCHEMA IF EXISTS {self.schema}"
+        if self.db_type == "postgres":
+            conn.execute(f"{sql} CASCADE")
+        else:
+            conn.execute(sql)
 
-    def load_transaction(self, data, session):
-
+    def get_transaction(self, data):
         customers = data.get("customers")
         transactions = data.get("transactions")
         transaction_details = data.get("transaction_details")
 
-        row = Customers(  # maintain the relationship between each tables
+        return Customers(  # maintain the relationship between each tables
             **customers,
             transactions=[
                 Transactions(
@@ -195,32 +188,39 @@ class DBSetup(DBConn):
             ],
         )
 
-        session.add(row)
-        session.commit()
-
-    def _seed_transactions(self):
+    def _seed_transactions(self, session):
+        self.log.info(f"Seeding Transactions: {self.db_type.upper()}")
         my_fake_data = DataGenerator()
-        session = self.get_session("mysql")
-        for line in my_fake_data.get_data():
-            self.load_transaction(line, session)
+        for row in my_fake_data.get_data():
+            row = self.get_transaction(row)
+            session.add(row)
 
     @property
     def _product_list(self):
         return PRODUCT_LIST
 
-    def _seed_products(self):
-        for database_type in self._database_types:  #
-            session = self.get_session(database_type)
-            for row in self._product_list:
-                product = Products(**row)  # pass in as a kwargs
-                session.add(product)  # insert data into both databases
-                session.commit()
+    def get_product(self, row):
+        return Products(**row)
+
+    def _seed_products(self, session):
+        self.log.info(f"Seeding Products: {self.db_type.upper()}")
+        for row in self._product_list:
+            row = self.get_product(row)
+            session.add(row)  # insert data into both databases
 
     def run(self):
-        self.reset()
-        self._create_tables()
-        self._seed_products()
-        self._seed_transactions()
+        self.log.info(f"Initiating setup: {self.db_type.upper()}")
+        conn = self.get_conn()
+        self.reset(conn)
+        self._create_tables(conn)
+        with self.get_session(conn) as session:
+            self._seed_products(session)
+            if self.db_type == "mysql":
+                self._seed_transactions(session)
+            session.commit()
+
+        self.log.info(f"Setup complete: {self.db_type.upper()}")
+        self.log.info("#" * 50)
 
 
 class ApplicationDataBase(DBConn):
@@ -229,8 +229,6 @@ class ApplicationDataBase(DBConn):
         self.jinja_env = Environment(
             loader=PackageLoader("database", "templates")
         )
-
-    db_type = "mysql"
 
     def _get_template(self, filename, **kwargs):
         temp = self.jinja_env.get_template(filename)
@@ -242,21 +240,6 @@ class ApplicationDataBase(DBConn):
         return self.run_query(sql)
 
     def run_query(self, sql):
-        conn = self.get_conn("mysql")
+        conn = self.get_conn()
         result = conn.execute(sql)
         return [dict(row) for row in result.fetchall()]
-
-
-if __name__ == "__main__":
-
-    kwargs = {"host": "localhost"}
-
-    app = ApplicationDataBase(**kwargs)
-    data1 = app.get_data("2021-08-03", "customers")
-    data2 = app.get_data("2021-05-01", "transactions")
-    data3 = app.get_data("2021-07-21", "transaction_details")
-    print(data1)
-    print("******")
-    print(data2)
-    print("******")
-    print(data3)
