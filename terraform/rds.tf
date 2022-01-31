@@ -1,4 +1,5 @@
 resource "aws_db_instance" "data_warehouse" {
+  name                = "henry"
   allocated_storage   = 10
   engine              = "postgres"
   engine_version      = "11.12"

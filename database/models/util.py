@@ -80,7 +80,7 @@ class DataGenerator:
         self.fake = Faker()
 
     def _get_dates(self):
-        start_date = dt.date(2019, 1, 1)  # set the start date
+        start_date = dt.date(2022, 1, 1)  # set the start date
         end_date = dt.datetime.now().date()  # set the end date
         diff = (end_date - start_date).days  # calculate the delta
 
@@ -155,7 +155,8 @@ class DBSetup(DBConn):
     def _create_tables(self, conn):
         if self.db_type == "postgres":
             if not conn.dialect.has_schema(conn, self.schema):
-                conn.execute(sa.schema.CreateSchema(self.schema))
+                if self.schema:
+                    conn.execute(sa.schema.CreateSchema(self.schema))
         if self.db_type == "mysql":
             conn.execute(f"CREATE DATABASE IF NOT EXISTS {self.schema}")
 

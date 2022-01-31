@@ -21,7 +21,7 @@ def get_sink(database):
     sink_kwargs = {
         "host": "host.docker.internal",
         "username": "henry",
-        "password": "henry",
+        "password": "henry123",
         "database": "henry",
         "schema": "henry",
         "table": "customers",

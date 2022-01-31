@@ -28,7 +28,7 @@ with dag:
         "host": "host.docker.internal",
         "port": "3307",
         "username": "henry",
-        "password": "henry",
+        "password": "henry123",
         "database": "henry",
         "schema": "henry",
         "table": "stocks",
