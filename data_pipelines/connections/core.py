@@ -8,6 +8,8 @@ import requests
 import psycopg2
 import mysql.connector as mysql
 
+from data_pipelines.connections.utils import Parameters
+
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
@@ -22,20 +24,18 @@ class BaseConn(ABC):
 
     def __init__(  # constructor for BaseConn class, initialize variables
         self,
-        host=None,
-        login=None,
-        password=None,
-        schema=None,
-        extra=None,
+        connection_id=None,
         *args,
         **kwargs,
     ):
-        self.host = host
-        self.login = login
-        self.password = password
-        self.schema = schema
-        self.extra = extra
         self.log = logger
+        self.connection_id = connection_id
+        self.conn_kwargs = self._get_conn_kwargs()
+
+    def _get_conn_kwargs(self):
+        params = Parameters()
+        response = params.get(self.connection_id)
+        return response
 
     @abstractmethod
     def connect(self):
@@ -237,15 +237,7 @@ class DBConn(BaseConn):
     """
 
     def __init__(self, **kwargs):
-        """
-        Constructing the connection by using the following keywords arguments
-        """
         super().__init__(**kwargs)
-        self.host = kwargs.get("host", "host.docker.internal")
-        self.port = kwargs.get("port")
-        self.username = kwargs.get("username")
-        self.password = kwargs.get("password")
-        self.database = kwargs.get("database")
         self.schema = kwargs.get("schema")
         self.table = kwargs.get("table")
 
@@ -298,23 +290,16 @@ class PostgresConn(DBConn):
     3. load data to PostgreSQL
     """
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-        self.port = kwargs.get(
-            "port", "5432"
-        )  # noqa:E501 check to see if the port values exist, if it is not, we set the default port to 5432
-
     def connect(self):
         """
         connect to the PostgresSQL DB
         """
         self.conn = psycopg2.connect(
-            host=self.host,
-            port=self.port,
-            user=self.username,
-            password=self.password,
-            database=self.database,
+            host=self.conn_kwargs.get("host"),
+            port=self.conn_kwargs.get("port"),
+            user=self.conn_kwargs.get("user"),
+            password=self.conn_kwargs.get("password"),
+            database=self.conn_kwargs.get("database"),
         )  # using psycopg2 to create a connection to the database
 
 
@@ -326,21 +311,16 @@ class MySQLConn(DBConn):
     3. load data to MySQL
     """
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-        self.port = kwargs.get("port", "3306")
-
     def connect(self):
         """
         To test if we connected to the database
         """
         self.conn = mysql.connect(
-            host=self.host,
-            port=self.port,
-            user=self.username,
-            password=self.password,
-            database=self.database,
+            host=self.conn_kwargs.get("host"),
+            port=self.conn_kwargs.get("port"),
+            user=self.conn_kwargs.get("username"),
+            password=self.conn_kwargs.get("password"),
+            database=self.conn_kwargs.get("database"),
         )
 
 
@@ -383,10 +363,9 @@ if __name__ == "__main__":
 
     from pprint import pprint
 
-    kwargs = {"url": "http://127.0.0.1:5000", "params": {"date": "2021-01-01"}}
-
-    conn = HTTPConn(**kwargs)
+    # conn = PostgresConn(connection_id = "postgres_local")
+    # conn = PostgresConn(connection_id = "postgres_remote")
+    conn = PostgresConn(connection_id="postgres_local")
 
     with conn:
-        data = conn.get_data()
-        pprint(data)
+        pprint("success!")

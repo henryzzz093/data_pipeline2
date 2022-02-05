@@ -25,7 +25,7 @@ class ConnectionKwargs(Enum):
         "port": "5432",
         "username": "henry",
         "password": "henry123",
-        "database": "postgres",
+        "database": "henry",
         "schema": "henry",
         "db_type": "postgres",
     }

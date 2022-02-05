@@ -6,15 +6,18 @@ import json
 
 class AWSConn(BaseConn):
     def __init__(self, **kwargs):
-        self.aws_access_key_id = kwargs.get("aws_access_key_id")
-        self.aws_secret_access_key = kwargs.get("aws_secret_key_id")
+        super().__init__(**kwargs)
         self.session = None
 
     def connect(self):
-        print(self.aws_access_key_id, self.aws_secret_access_key)
+        aws_access_key_id = self.conn_kwargs.get("aws_access_key_id")
+        aws_secret_access_key = self.conn_kwargs.get("aws_secret_access_key")
+        aws_region = self.conn_kwargs.get("aws_region")
+
         self.session = boto3.Session(
-            aws_access_key_id=self.aws_access_key_id,
-            aws_secret_access_key=self.aws_secret_access_key,
+            aws_access_key_id=aws_access_key_id,
+            aws_secret_access_key=aws_secret_access_key,
+            region_name=aws_region,
         )
 
     def close(self):
@@ -58,13 +61,7 @@ class S3Conn(AWSConn):
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_path = f"{temp_dir}/data.json"
             self._write_json(temp_path, data)
+            print("#" * 10)
+            print(self.s3_bucket, self.s3_key, temp_path)
+            print(data)
             self.s3_client.upload_file(temp_path, self.s3_bucket, self.s3_key)
-
-
-if __name__ == "__main__":
-    kwargs = {"s3_key": "data.json", "s3_bucket": "test-bucket-henry-093"}
-    myconn = S3Conn(**kwargs)
-
-    with myconn:
-        data = myconn.get_data()
-        print(data)

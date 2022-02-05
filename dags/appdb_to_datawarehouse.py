@@ -1,12 +1,12 @@
 import datetime
 
-import os
-
 import airflow
 
 from data_pipelines.actions.aws import AppDataBaseToS3, S3ToDatawarehouse
 
 from data_pipelines.airflow.operator import ActionOperator
+
+from data_pipelines.constants import ConnectionIDs
 
 table_list = ["customers", "transactions", "transaction_details"]
 
@@ -25,8 +25,7 @@ with dag:
         }
 
         extract_sink_kwargs = {
-            "aws_access_key_id": os.getenv("AWS_ACCESS_KEY"),
-            "aws_secret_key_id": os.getenv("AWS_SECRET_KEY"),
+            "connection_id": ConnectionIDs.AWS_DEFAULT.value,
             "s3_key": f"{{{{ ds }}}}/{table}/data.json",
             "s3_bucket": "data-pipeline-datalake-henry",
         }
@@ -41,35 +40,25 @@ with dag:
             action_class=AppDataBaseToS3, dag=dag, **extract_kwargs
         )
 
-        hosts = [
-            "host.docker.internal",
-            "henry.co6ljk0rbymi.us-west-2.rds.amazonaws.com",
+        connection_ids = [
+            ConnectionIDs.POSTGRES_DOCKER.value,
+            ConnectionIDs.POSTGRES_REMOTE.value,
         ]
 
         load_tasks = []
 
         names = ["local", "remote"]
 
-        for host, name in zip(hosts, names):
-
-            if name == "local":
-                port = "5438"
-            else:
-                port = "5432"
+        for connection_id, name in zip(connection_ids, names):
 
             load_source_kwargs = {
-                "aws_access_key_id": os.getenv("AWS_ACCESS_KEY"),
-                "aws_secret_key_id": os.getenv("AWS_SECRET_KEY"),
+                "connection_id": ConnectionIDs.AWS_DEFAULT.value,
                 "s3_key": f"{{{{ ds }}}}/{table}/data.json",
                 "s3_bucket": "data-pipeline-datalake-henry",
             }
 
             load_sink_kwargs = {
-                "host": host,
-                "port": port,
-                "username": "henry",
-                "password": "henry123",
-                "database": "henry",
+                "connection_id": connection_id,
                 "table": table,
                 "schema": "henry",
             }

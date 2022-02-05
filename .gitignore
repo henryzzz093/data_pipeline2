@@ -138,3 +138,6 @@ logs/
 **/.idea
 **/.terraform
 **/terraform.tfstate*
+
+# others
+dev/
