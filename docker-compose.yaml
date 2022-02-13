@@ -80,7 +80,7 @@ services:
       POSTGRES_USER: airflow
       POSTGRES_PASSWORD: airflow
       POSTGRES_DB: airflow
-      
+
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "airflow"]
       interval: 5s
@@ -221,6 +221,10 @@ services:
         condition: service_healthy
     volumes:
       - ./database:/app/database
+
+
+
+      
 
  
 
