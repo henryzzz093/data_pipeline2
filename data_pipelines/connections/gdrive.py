@@ -2,11 +2,14 @@ from googleapiclient.http import MediaFileUpload
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
+from data_pipelines.writers.core import writer_factory
 import uuid
-import json
 import tempfile
+import datetime
 
 from data_pipelines.connections.core import BaseConn
+
+SCOPES = ["https://www.googleapis.com/auth/drive"]
 
 
 class GDriveConn(BaseConn):
@@ -16,7 +19,9 @@ class GDriveConn(BaseConn):
 
     def connect(self):
         creds = Credentials.from_authorized_user_info(self.conn_kwargs)
-        creds.refresh(Request())
+        if not creds.valid:
+            if creds.expired and creds.refresh_token:
+                creds.refresh(Request())
         self.client = build("drive", "v3", credentials=creds)
 
     def close(self):
@@ -53,33 +58,32 @@ class GDriveConn(BaseConn):
             folder_id = folder.get("id")
         return folder_id
 
-    def load_data(self, data, **kwargs):
-        folder_name = kwargs.get("folder_name")
+    def load_file(self, file_path, folder_name, **kwargs):
+        file_name = file_path.split("/")[-1]
         folder_id = self._get_folder_id(folder_name)
+        file_metadata = {"name": file_name, "parents": [folder_id]}
 
-        with tempfile.TemporaryDirectory() as temp_dir:
-            file_name = f"{uuid.uuid4()}_data.json"
-            temp_path = f"{temp_dir}/{file_name}"
-
-            with open(temp_path, "w") as f:
-                json.dump(data, f, default=str)
-
-            file_metadata = {"name": file_name, "parents": [folder_id]}
-
-            media = MediaFileUpload(temp_path, resumable=True)
-            self.client.files().create(
-                body=file_metadata, media_body=media, fields="id"
-            ).execute()
+        media = MediaFileUpload(file_path, resumable=True)
+        self.client.files().create(
+            body=file_metadata, media_body=media, fields="id"
+        ).execute()
         self.log.info(
-            f"file created successfully: https://drive.google.com/drive/u/0/folders/{folder_id}"  # noqa: E501
+            f"file created successfully: https://drive.google.com/drive/u/0/folders/{folder_id}/{file_name}"  # noqa: E501
         )
 
+    def load_data(self, data, **kwargs):
 
-if __name__ == "__main__":
+        curret_date = datetime.datetime.now().strftime("%Y%m%d")
 
-    kwargs = {"folder_name": "Testing1"}
+        folder_name = kwargs.get("folder_name")
+        file_ext = kwargs.get("file_ext", "json")
+        with tempfile.TemporaryDirectory() as temp_dir:
 
-    conn = GDriveConn(connection_id="gdrive_default")
-    with conn:
-        data = {"test": "Testing Message!"}
-        conn.load_data(data, **kwargs)
+            file_name = f"{curret_date}_{uuid.uuid4()}_data.{file_ext}"
+            file_path = f"{temp_dir}/{file_name}"
+            writer = writer_factory(file_ext)
+            writer.write(data, file_path)
+
+            # self.log.warning(f"File Extension not Recognized, {file_ext}")
+
+            self.load_file(file_path, folder_name)

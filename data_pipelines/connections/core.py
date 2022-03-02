@@ -3,6 +3,7 @@ import json
 import logging
 from abc import ABC, abstractmethod
 from os.path import abspath, dirname
+from airflow.exceptions import AirflowSkipException
 import requests
 
 import psycopg2
@@ -129,7 +130,7 @@ class CSVConn(FileConn):
                 True  # if it is 'w', we only write the header once.
             )
 
-    def get_data(self):
+    def get_data(self, **kwargs):
         """
         Contains logic to retrieve data from csv file.
         """
@@ -160,7 +161,7 @@ class TextConn(FileConn):
     3. load data to text files
     """
 
-    def get_data(self):
+    def get_data(self, **kwargs):
         """
         Contains logic to retrieve data from csv file
         """
@@ -182,11 +183,11 @@ class TextConn(FileConn):
 
 
 class JsonConn(FileConn):
-    def get_data(self):
+    def get_data(self, **kwargs):
         self.log.info('f"Retrieving data from: {self.filepath}')
         yield json.load(self.conn)
 
-    def load_data(self, data):
+    def load_data(self, data, **kwargs):
         self.log.info(f"Writing data to: {self.filepath}")
         for item in data:
             json.dump(item, self.conn, indent=4)
@@ -218,7 +219,7 @@ class JsonlConn(FileConn):
             "connections", f"data/{file_dir}/{filename}.jsonl"
         )
 
-    def get_data(self):
+    def get_data(self, **kwargs):
         pass
 
     def load_data(self, data, *args, **kwargs):
@@ -250,10 +251,10 @@ class DBConn(BaseConn):
     def get_data_full(self):
         pass
 
-    def get_data(self):
+    def get_data(self, **kwargs):
         pass
 
-    def load_data(self, data):
+    def load_data(self, data, **kwargs):
         """
         1. setup connection to the cursor
         2. extract column name and row values from the dictionary file # noqa:E501
@@ -351,21 +352,13 @@ class HTTPConn(BaseConn):
         response.raise_for_status()
         return response
 
-    def get_data(self):
+    def get_data(self, **kwargs):
         response = self._send_request()
-        return response.json()
+        data = response.json()
+        if not data:
+            raise AirflowSkipException(f"No Data Found! {data}")
+        for row in data:
+            yield row
 
-    def load_data(self, data):
+    def load_data(self, data, **kwargs):
         pass
-
-
-if __name__ == "__main__":
-
-    from pprint import pprint
-
-    # conn = PostgresConn(connection_id = "postgres_local")
-    # conn = PostgresConn(connection_id = "postgres_remote")
-    conn = PostgresConn(connection_id="postgres_local")
-
-    with conn:
-        pprint("success!")

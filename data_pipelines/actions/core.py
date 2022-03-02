@@ -44,22 +44,29 @@ class SourceToSink(BaseAction):
 
     def __init__(self, **kwargs):
         super().__init__()
-
-        source_kwargs = kwargs.get(
+        self.source_kwargs = kwargs.get(
             "source_kwargs", {}
         )  # if the key not exist, return the defalt values (emply dict)
-        sink_kwargs = kwargs.get("sink_kwargs", {})
+        self.sink_kwargs = kwargs.get("sink_kwargs", {})
 
         self.source = self.source_class(
-            **source_kwargs
+            **self.source_kwargs
         )  # instantiate source & sink from the parent class
-        self.sink = self.sink_class(**sink_kwargs)
+        self.sink = self.sink_class(**self.sink_kwargs)
+
+    @property
+    def download_kwargs(self):
+        return self.source_kwargs
+
+    @property
+    def upload_kwargs(self):
+        return self.sink_kwargs
 
     def get_data(self):
         """
         Pulls data from source class.
         """
-        return self.source.get_data()
+        return self.source.get_data(**self.download_kwargs)
 
     def transform_data(self, data):
         """
@@ -67,11 +74,11 @@ class SourceToSink(BaseAction):
         """
         return data
 
-    def load_data(self, data, **kwargs):
+    def load_data(self, data):
         """
         Loads data with the sink class
         """
-        self.sink.load_data(data, **kwargs)
+        self.sink.load_data(data, **self.upload_kwargs)
 
     def run(self):
         """
@@ -164,7 +171,8 @@ class CSVToPostgres(SourceToSink):
                 self.log.info("Data Load Success!")
 
             else:  # otherwise, raise Airflow Skip Execption and skip the current date # noqa:E501
-                raise AirflowSkipException("No Data Available on that date !")
+                # raise AirflowSkipException("No Data Available on that date !") # noqa:E501
+                pass
 
 
 class CSVToMySQL(SourceToSink):
