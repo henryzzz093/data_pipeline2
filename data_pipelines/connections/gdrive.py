@@ -4,13 +4,12 @@ from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from data_pipelines.writers.core import writer_factory
 import uuid
-import json
 import tempfile
-import csv
-import random
 import datetime
 
 from data_pipelines.connections.core import BaseConn
+
+SCOPES = ["https://www.googleapis.com/auth/drive"]
 
 
 class GDriveConn(BaseConn):
@@ -20,7 +19,9 @@ class GDriveConn(BaseConn):
 
     def connect(self):
         creds = Credentials.from_authorized_user_info(self.conn_kwargs)
-        creds.refresh(Request())
+        if not creds.valid:
+            if creds.expired and creds.refresh_token:
+                creds.refresh(Request())
         self.client = build("drive", "v3", credentials=creds)
 
     def close(self):
@@ -71,7 +72,7 @@ class GDriveConn(BaseConn):
         )
 
     def load_data(self, data, **kwargs):
-        
+
         curret_date = datetime.datetime.now().strftime("%Y%m%d")
 
         folder_name = kwargs.get("folder_name")
@@ -82,30 +83,7 @@ class GDriveConn(BaseConn):
             file_path = f"{temp_dir}/{file_name}"
             writer = writer_factory(file_ext)
             writer.write(data, file_path)
-            
-            
-            #self.log.warning(f"File Extension not Recognized, {file_ext}")
+
+            # self.log.warning(f"File Extension not Recognized, {file_ext}")
 
             self.load_file(file_path, folder_name)
-                    
-
-if __name__ == "__main__":
-
-    kwargs = {"folder_name": "Testing1"}
-
-    def get_data():
-        pets = ["cat", "dog", "mouse", "bird", "rabbit"]
-        ages  = [12, 3, 4, 5]
-        for i in range(10):
-            pet = random.choice(pets)
-            age = random.choice(ages)
-            yield {
-                "pet": pet,
-                "age": age
-            }
-    
-
-    conn = GDriveConn(connection_id="gdrive_default")
-    with conn:
-        data = get_data()
-        conn.load_data(data, file_ext = 'txt', **kwargs)

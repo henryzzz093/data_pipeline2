@@ -71,19 +71,3 @@ class TransactionDetails(BaseTable, Base):
     )
     product_id = sa.Column(sa.INTEGER, sa.ForeignKey("henry.products.id"))
     quantity = sa.Column(sa.INTEGER)
-
-
-if __name__ == "__main__":
-    dbapi = "mysql+pymysql"
-    username = "henry"
-    password = "henry123"
-    host = "localhost"
-    port = "3307"
-    database = "henry"
-
-    connection_string = (
-        f"{dbapi}://{username}:{password}@{host}:{port}/{database}"
-    )
-
-    engine = sa.create_engine(connection_string, echo=True)
-    Base.metadata.create_all(engine)

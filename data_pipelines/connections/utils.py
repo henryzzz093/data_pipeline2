@@ -28,8 +28,3 @@ class Parameters:
             value = response.get("Parameter").get("Value")
             return json.loads(value)
         return {}
-
-
-if __name__ == "__main__":
-    A = Parameters()
-    print(A.get("mysql_local"))

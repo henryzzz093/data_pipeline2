@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from fileinput import filename
 import json
 import csv
 
@@ -10,9 +9,7 @@ class BaseWriter(ABC):
         pass
 
 
-
 class CSVWriter(BaseWriter):
-
     def write(self, data, file_path, **kwargs):
         with open(file_path, "w") as f:
             row = next(data)
@@ -24,8 +21,8 @@ class CSVWriter(BaseWriter):
 
 
 class JSONWriter(BaseWriter):
-     def write(self, data, file_path, **kwargs):
-         with open(file_path, "w") as f:
+    def write(self, data, file_path, **kwargs):
+        with open(file_path, "w") as f:
             for line in data:
                 line = json.dumps(line) + "\n"
                 f.write(line)
@@ -39,6 +36,3 @@ def writer_factory(writer_type):
 
     except KeyError:
         raise KeyError(f"File Extension not Recognized: {writer_type}")
-        
-
-

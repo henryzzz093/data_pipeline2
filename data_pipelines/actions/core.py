@@ -1,7 +1,7 @@
 import logging
 from abc import ABC, abstractmethod
 
-#from airflow.exceptions import AirflowSkipException
+from airflow.exceptions import AirflowSkipException
 
 from data_pipelines.connections.core import (
     CSVConn,
@@ -53,11 +53,11 @@ class SourceToSink(BaseAction):
             **self.source_kwargs
         )  # instantiate source & sink from the parent class
         self.sink = self.sink_class(**self.sink_kwargs)
-    
+
     @property
     def download_kwargs(self):
         return self.source_kwargs
-    
+
     @property
     def upload_kwargs(self):
         return self.sink_kwargs
@@ -171,7 +171,7 @@ class CSVToPostgres(SourceToSink):
                 self.log.info("Data Load Success!")
 
             else:  # otherwise, raise Airflow Skip Execption and skip the current date # noqa:E501
-                #raise AirflowSkipException("No Data Available on that date !")
+                # raise AirflowSkipException("No Data Available on that date !") # noqa:E501
                 pass
 
 

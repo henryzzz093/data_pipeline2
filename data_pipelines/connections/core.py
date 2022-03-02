@@ -3,6 +3,7 @@ import json
 import logging
 from abc import ABC, abstractmethod
 from os.path import abspath, dirname
+from airflow.exceptions import AirflowSkipException
 import requests
 
 import psycopg2
@@ -30,7 +31,6 @@ class BaseConn(ABC):
     ):
         self.log = logger
         self.connection_id = connection_id
-        print(connection_id)
         self.conn_kwargs = self._get_conn_kwargs()
 
     def _get_conn_kwargs(self):
@@ -354,21 +354,11 @@ class HTTPConn(BaseConn):
 
     def get_data(self, **kwargs):
         response = self._send_request()
-        print(response.json())
-        for row in response.json():
+        data = response.json()
+        if not data:
+            raise AirflowSkipException(f"No Data Found! {data}")
+        for row in data:
             yield row
 
     def load_data(self, data, **kwargs):
         pass
-
-
-if __name__ == "__main__":
-
-    from pprint import pprint
-
-    # conn = PostgresConn(connection_id = "postgres_local")
-    # conn = PostgresConn(connection_id = "postgres_remote")
-    conn = PostgresConn(connection_id="postgres_local")
-
-    with conn:
-        pprint("success!")
