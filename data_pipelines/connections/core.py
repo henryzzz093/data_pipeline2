@@ -260,9 +260,12 @@ class DBConn(BaseConn):
         2. extract column name and row values from the dictionary file # noqa:E501
         3. Insert into the table by using cursor execute SQL statement
         """
+        print("TEST!")
+        print(data)
         with self.conn.cursor() as cursor:
             for row in data:
                 try:
+                    print(row)
                     columns = ", ".join(
                         row.keys()
                     )  # extract column names from dictionary
@@ -354,7 +357,10 @@ class HTTPConn(BaseConn):
 
     def get_data(self, **kwargs):
         response = self._send_request()
+
+        print("TEST!")
         data = response.json()
+        print(data)
         if not data:
             raise AirflowSkipException(f"No Data Found! {data}")
         for row in data:

@@ -46,7 +46,7 @@ class SourceToSink(BaseAction):
         super().__init__()
         self.source_kwargs = kwargs.get(
             "source_kwargs", {}
-        )  # if the key not exist, return the defalt values (emply dict)
+        )  # if the key not exist, return the defalt values (emply dict), because if we do not set empty dict, unpack NONE -> ERROR # noqa:E501
         self.sink_kwargs = kwargs.get("sink_kwargs", {})
 
         self.source = self.source_class(

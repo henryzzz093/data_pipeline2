@@ -44,7 +44,7 @@
 version: '3'
 x-airflow-common:
   &airflow-common
-  build: .
+  build: . # . reference the current path
   environment:
     &airflow-common-env
     _AIRFLOW_WWW_USER_USERNAME: henry
@@ -59,21 +59,21 @@ x-airflow-common:
     AIRFLOW__API__AUTH_BACKEND: 'airflow.api.auth.backend.basic_auth'
     _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-}
 
-  env_file:
+  env_file: # reference to the local .env file
     - .env
 
-  volumes:
-    - ./dags:/opt/airflow/dags
+  volumes: # a way to give access a file in local, allow us to make changes and update inside the container without shuting down..
+    - ./dags:/opt/airflow/dags    # mapping
     - ./logs:/opt/airflow/logs
     - ./data_pipelines:/opt/airflow/data_pipelines
-  user: "${AIRFLOW_UID:-50000}:${AIRFLOW_GID:-50000}"
+  user: "${AIRFLOW_UID:-50000}:${AIRFLOW_GID:-50000}" # passing airflow_UID and airflow_GID, recommended by Airflow.
   depends_on:
-    redis:
-      condition: service_healthy
+    redis:  # in memory storage
+      condition: service_healthy # depends on if the service is healthy
     postgres:
       condition: service_healthy
 
-services:
+services:  # each service is individual docker container
   postgres:
     image: postgres:13
     environment:
@@ -81,7 +81,7 @@ services:
       POSTGRES_PASSWORD: airflow
       POSTGRES_DB: airflow
 
-    healthcheck:
+    healthcheck: 
       test: ["CMD", "pg_isready", "-U", "airflow"]
       interval: 5s
       retries: 5
@@ -94,13 +94,13 @@ services:
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
-      timeout: 30s
+      timeout: 30s    # if it takes more than 30s to responds, it will called timeout and restart
       retries: 50
     restart: always
 
   airflow-webserver:
-    <<: *airflow-common
-    command: webserver
+    <<: *airflow-common # pulling config that decleared at the top, do not repeat yourself
+    command: webserver    # as soon as the webserver start, run command 'webserver'
     ports:
       - 8080:8080
     healthcheck:
@@ -132,7 +132,7 @@ services:
       retries: 5
     restart: always
 
-  airflow-init:
+  airflow-init:   # initiate the airflow
     <<: *airflow-common
     command: version
     environment:
@@ -172,7 +172,7 @@ services:
 
   mysql:
     container_name: ms_container
-    platform: linux/x86_64
+    platform: linux/x86_64   # the base linux version
     image: mysql:5.7
     restart: always
     environment:
@@ -181,28 +181,18 @@ services:
       MYSQL_PASSWORD: henry123
       MYSQL_DATABASE: henry
     ports:
-      - "3307:3306"
+      - "3307:3306"   # left: local, right: host.docker.internal
     healthcheck:
       test: mysqladmin ping -h "host.docker.internal" -u henry --password=henry --port 3307
       interval: 5s
       retries: 24
       start_period: 100s
-  
-  streamlit:
-    container_name: streamlit_henry
-    build:
-      context: .
-      dockerfile: ./streamlit/Dockerfile
-    ports:
-      - 8501:8501
-    volumes:
-      - ./streamlit/app:/app
 
-  fake_data_api:
+  fake_data_api:  # query those data inside database, and sending the result as json from html...
     container_name: fake_data_api
-    build:
-      context: .
-      dockerfile: ./fake_data_api/Dockerfile
+    build:   #
+      context: .    # where you gonna start your search
+      dockerfile: ./fake_data_api/Dockerfile     # map the local path/fake_data_api/Dockerile
     ports:
       - 5000:5000
     volumes:
@@ -212,8 +202,8 @@ services:
   db_setup:
     container_name: db_setup
     build: 
-      context: .
-      dockerfile: ./database/Dockerfile
+      context: .  # set search to current working directory
+      dockerfile: ./database/Dockerfile 
     depends_on:
       mysql:
         condition: service_healthy

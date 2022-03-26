@@ -13,7 +13,8 @@ table_list = ["customers", "transactions", "transaction_details"]
 
 dag = airflow.DAG(
     dag_id="pipeline.appdb_to_datawarehouse",
-    start_date=datetime.datetime(2022, 1, 10),
+    start_date=datetime.datetime(2022, 3, 1),
+    end_date=datetime.datetime(2022, 3, 5),
     schedule_interval="@daily",
 )
 

@@ -2,6 +2,7 @@ import tempfile
 import boto3
 from data_pipelines.connections.core import BaseConn
 import json
+import jsonlines
 
 
 class AWSConn(BaseConn):
@@ -36,12 +37,12 @@ class S3Conn(AWSConn):
 
     def _write_json(self, path, data):
         with open(path, "w") as f:
-            json.dump(data, f, default=str)
+            for row in data:
+                f.write(f"{json.dumps(row)}\n")
 
     def _read_json(self, path):
-        with open(path) as f:
-            data = json.load(f)
-        return data
+        with jsonlines.open(path) as reader:
+            yield from reader
 
     def get_data(self, **kwargs):
         """
@@ -54,10 +55,13 @@ class S3Conn(AWSConn):
             self.s3_client.download_file(
                 self.s3_bucket, self.s3_key, temp_path
             )
-            return self._read_json(temp_path)
+            with jsonlines.open(temp_path) as reader:
+                yield from reader
 
     def load_data(self, data, **kwargs):
         """"""
+        print("TEST 4")
+
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_path = f"{temp_dir}/data.json"
             self._write_json(temp_path, data)

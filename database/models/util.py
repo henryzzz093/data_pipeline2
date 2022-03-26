@@ -128,7 +128,7 @@ class DataGenerator:
 
         for date in self._get_dates():
 
-            for _ in range(40):
+            for _ in range(10):
 
                 name = self._name
 

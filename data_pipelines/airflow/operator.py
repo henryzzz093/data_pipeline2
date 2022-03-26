@@ -1,5 +1,4 @@
 from airflow.models import BaseOperator
-import jinja2
 
 
 class ActionOperator(BaseOperator):
@@ -13,12 +12,11 @@ class ActionOperator(BaseOperator):
         super().__init__(*args, **base_kwargs)
         self.kwargs = kwargs
         self.action_class = action_class
-        self.jinja_env = jinja2.Environment()
 
     def execute(self, context):
         """
         Execute method that will be ran when DAG initiates
         """
-        self.kwargs = self.render_template(self.kwargs, context)
-        action = self.action_class(**self.kwargs)
+        kwargs = self.render_template(self.kwargs, context)
+        action = self.action_class(**kwargs)
         action.run()
