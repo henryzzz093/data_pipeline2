@@ -92,10 +92,10 @@ Verify that the minimum memory requirements for Docker are set. Use the image be
     docker exec -it ms_container bash
     ```
     and then connected to the MySQL inside the container by using the following:
-    - host = host.docker.internal
-    - port = 3307
-    - user = henry
-    - passcode = henry123
+    - host = `host.docker.internal`
+    - port = `3307`
+    - user = `henry`
+    - passcode = `henry123`
 
     After entering the mysql database, you can find the below table inside schema 'henry'. 
     ![](images/inside_MySQL.png)
