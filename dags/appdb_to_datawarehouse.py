@@ -27,7 +27,7 @@ with dag:
 
         extract_sink_kwargs = {
             "connection_id": ConnectionIDs.AWS_DEFAULT.value,
-            "s3_key": f"{{{{ ds }}}}/{table}/data.json",
+            "s3_key": f"{{{{ ds }}}}/{table}/data.json",  # the path within S3
             "s3_bucket": "data-pipeline-datalake-henry",
         }
 
@@ -41,9 +41,10 @@ with dag:
             action_class=AppDataBaseToS3, dag=dag, **extract_kwargs
         )
 
+        # abstract layer to securely handle the credentials
         connection_ids = [
-            ConnectionIDs.POSTGRES_DOCKER.value,
-            ConnectionIDs.POSTGRES_REMOTE.value,
+            ConnectionIDs.POSTGRES_DOCKER.value,  # local postgresDB
+            ConnectionIDs.POSTGRES_REMOTE.value,  # AWS RDS
         ]
 
         load_tasks = []
@@ -73,6 +74,8 @@ with dag:
             load = ActionOperator(
                 action_class=S3ToDatawarehouse, dag=dag, **load_kwargs
             )
+
             load_tasks.append(load)
 
+        # the reason why we put them into a list is because be executed at the same time # noqa:E501
         extract >> load_tasks

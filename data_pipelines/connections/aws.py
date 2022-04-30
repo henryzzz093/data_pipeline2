@@ -59,13 +59,8 @@ class S3Conn(AWSConn):
                 yield from reader
 
     def load_data(self, data, **kwargs):
-        """"""
-        print("TEST 4")
 
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_path = f"{temp_dir}/data.json"
             self._write_json(temp_path, data)
-            print("#" * 10)
-            print(self.s3_bucket, self.s3_key, temp_path)
-            print(data)
             self.s3_client.upload_file(temp_path, self.s3_bucket, self.s3_key)

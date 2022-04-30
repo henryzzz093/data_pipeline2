@@ -6,6 +6,9 @@ class ActionOperator(BaseOperator):
     Operator used to execute action class during airflow DAG run.
     """
 
+    ui_color = "black"
+    ui_fgcolor = "#ce8dd8"
+
     def __init__(self, action_class, *args, **kwargs):
 
         base_kwargs = {"task_id": kwargs.pop("task_id")}
