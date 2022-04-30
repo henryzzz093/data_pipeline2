@@ -92,11 +92,7 @@ Verify that the minimum memory requirements for Docker are set. Use the image be
     docker exec -it ms_container bash
     ```
     and then connected to the MySQL inside the container by using the following:
-    - host = `host.docker.internal`
-    - port = `3307`
-    - user = `henry`
-    - passcode = `henry123`
-
+    
     After entering the mysql database, you can find the below table inside schema 'henry'. 
     ![](images/inside_MySQL.png)
     From this point we have successfully initiated the MySQL database and created all the tables we need for this project.
@@ -116,13 +112,8 @@ Verify that the minimum memory requirements for Docker are set. Use the image be
 7. After few mintues, you can check to see if the task has finished by clicking the task name from the Airflow UI:
 ![](images/Airflow_finished.png)
 
-8. You can use visualization tools (PGAdmin4 or Dbeaver) to connect to my AWS rds and check if these tables exist in there, the connection credentials is listed below:
+8. You can use visualization tools (PGAdmin4 or Dbeaver) to connect to my AWS rds and check if these tables exist in there
 
-    - host: `henry.co6ljk0rbymi.us-west-2.rds.amazonaws.com`
-    - database: `henry`
-    - username: `henry`
-    - password: `henry123`
-  
     ![](images/inside_rds_customer.png)
 
 9. You can check if these tables exists in your local datawarehouse (postgres) by using the following steps:
@@ -133,10 +124,6 @@ Verify that the minimum memory requirements for Docker are set. Use the image be
 
     and then using the following credentials:
 
-    - host: `host.docker.internal`
-    - port: `5438`
-    - username: `henry`
-    - password: `henry123`
 
     <br>
     tables inside the local datawarehosue:
