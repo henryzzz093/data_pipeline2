@@ -136,6 +136,9 @@ Verify that the minimum memory requirements for Docker are set. Use the image be
     make reset
     ```
 
+12. Check the PPT
+[Data pipeline PPT](https://data-pipeline-public-s3.s3.us-west-2.amazonaws.com/presentation/DataPipelinePresentation.pdf)
+
 
 <!-- How To -->
 ## How To

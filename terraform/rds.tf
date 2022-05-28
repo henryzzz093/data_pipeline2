@@ -2,7 +2,7 @@ resource "aws_db_instance" "data_warehouse" {
   name                = "henry"
   allocated_storage   = 10
   engine              = "postgres"
-  engine_version      = "11.12"
+  engine_version      = "11.13"
   identifier          = "henry"
   instance_class      = "db.t2.micro"
   username            = "henry"
